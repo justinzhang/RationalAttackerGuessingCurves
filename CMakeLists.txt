@@ -8,8 +8,8 @@ project(PasswordGuessingCurves)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # gurobi c++ package
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(GUROBI REQUIRED)
+# list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+# find_package(GUROBI REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
@@ -36,6 +36,6 @@ add_executable(main main.cpp ${SRC_FILES})
 target_include_directories(main PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(GUROBI_PATH /Library/gurobi1102/macos_universal2)
 set(GUROBI_CPPLIB -L${GUROBI_PATH}/lib -lgurobi_c++ -lgurobi110 -lm)
-target_include_directories(test PUBLIC ${GUROBI_PATH}/include)
-target_link_libraries(test ${GUROBI_CPPLIB})
+target_include_directories(main PUBLIC ${GUROBI_PATH}/include)
+target_link_libraries(main ${GUROBI_CPPLIB})
 
