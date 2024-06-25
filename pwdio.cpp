@@ -1,14 +1,5 @@
 #include "pwdio.hpp"
 
-void print(dist_t& d) {
-  cout << "distribution (" << d.filetype << "): " << d.filename << '\n';
-  cout << "Distinct: " << d.distinct << "; Total: " << d.N << '\n';
-  cout << "freqcount:\n";
-  for (auto x:d.freqcount) {
-    cout << "  (" << x.first << ", " << x.second << ")\n";
-  }
-}
-
 void parse_freqcount(dist_t& dist, vector<pair<int64_t, int64_t>>& freqcount) {
   sort(freqcount.rbegin(), freqcount.rend()); // sort descending
 
