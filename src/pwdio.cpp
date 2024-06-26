@@ -96,7 +96,7 @@ void read_freqcount(dist_t& dist, std::string filename) {
   }
 
   dist.filename = filename;
-  dist.filetype = "pwdfreq";
+  dist.filetype = "freqcount";
 
   int64_t freq, count;
   std::string line;
