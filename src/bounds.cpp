@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "bounds.hpp"
+#include "helpers.hpp"
 
 // LP paper
 
@@ -16,7 +17,55 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
     return -1.0;
   }
 
+  // TODO: There might be more efficient implementation, now its O(distinct), might be some O(log(N)*d)
+
+  std::vector<int64_t> cnt_D1(dist.distinct, 0);
+  std::vector<int64_t> cnt_D2(dist.distinct, 0);
+  for (int i=0; i<dist.freqcount.size(); ++i) {
+    int64_t freq = dist.freqcount[i].first;
+    int64_t count = dist.freqcount[i].second;
+    int64_t offset = (i==0) ? 0 : dist.prefcount[i-1];
+    for (int j=0; j<count; ++j) {
+      cnt_D1[offset+j] = freq;
+    }
+  }
+
+  std::vector<int64_t> pref_D(dist.distinct, 0);
+  pref_D[0] = cnt_D1[0];
+  for (int i=1; i<pref_D.size(); ++i) {
+    pref_D[i] = pref_D[i-1] + cnt_D1[i];
+  }
+
+  for (auto x:dist.D2) {
+    auto it = std::lower_bound(pref_D.begin(), pref_D.end(), x);
+    if (it == pref_D.end()) {
+      std::cerr << "Something went wrong here" << std::endl;
+      return -1.0;
+    }
+    int64_t id = it - pref_D.begin();
+    cnt_D2[id]++;
+    cnt_D1[id]--;
+  }
+
+  std::vector<std::pair<int64_t, int64_t>> cnt_D1_D2(dist.distinct);
+  for (int i=0; i<dist.distinct; ++i) {
+    cnt_D1_D2[i] = std::make_pair(cnt_D1[i], cnt_D2[i]);
+  }
+
+  sort(cnt_D1_D2.begin(), cnt_D1_D2.end(), [&](std::pair<int64_t, int64_t>& a, std::pair<int64_t, int64_t>& b) {
+    if (a.first == b.first) {
+      return a.second > b.second;
+    }
+    return a.first > b.first;
+  });
+
+  double h_D1_D2_G = 0.0;
+  for (int i=0; i<G; ++i) {
+    h_D1_D2_G += cnt_D1_D2[i].second;
+  }
+
   double t = sqrtl(-log(err) / (2.0 * dist.D2.size()));
+  return (h_D1_D2_G - t) / dist.D2.size();
 }
 
 double prior_LB(dist_t& dist, int64_t G, int64_t j, double err1, double err2) { // Thm 9
@@ -71,4 +120,24 @@ double new_LB_samp() { // Coro 4
 
 double new_UB(dist_t& dist, int64_t G, double err) { // Thm 2
   int64_t F = most_frequent(dist, G);
+
+  if (F == dist.N) {
+    return 1.0;
+  }
+
+  int64_t iterations = 50;
+  double lo=0.0, hi=1.0, mid;
+
+  while (iterations--) {
+    mid = (lo + hi) / 2.0;
+    double cdf = bcdf(F, dist.N, mid);
+    if (cdf > err) {
+      lo = mid;
+    }
+    else {
+      hi = mid;
+    }
+  }
+
+  return mid;
 }

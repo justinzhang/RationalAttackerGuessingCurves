@@ -76,6 +76,7 @@ void partition(dist_t& dist, int64_t d) {
   else {
     partition_large_d(dist, d);
   }
+  sort(dist.D2.begin(), dist.D2.end());
 }
 
 void partition(dist_t& dist, double fraction) {
