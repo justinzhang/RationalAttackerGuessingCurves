@@ -12,7 +12,7 @@ double freq_UB(dist_t& dist, int64_t G, double err) { // Coro 4
 }
 
 double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
-  if (dist.D2.empty()) {
+  if (dist.D2_idx.empty()) {
     std::cerr << "must partition before calculating sampling LB" << std::endl;
     return -1.0;
   }
@@ -36,7 +36,7 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
     pref_D[i] = pref_D[i-1] + cnt_D1[i];
   }
 
-  for (auto x:dist.D2) {
+  for (auto x:dist.D2_idx) {
     auto it = std::lower_bound(pref_D.begin(), pref_D.end(), x);
     if (it == pref_D.end()) {
       std::cerr << "Something went wrong here" << std::endl;
@@ -64,8 +64,8 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
     h_D1_D2_G += cnt_D1_D2[i].second;
   }
 
-  double t = sqrtl(-log(err) / (2.0 * dist.D2.size()));
-  return (h_D1_D2_G - t) / dist.D2.size();
+  double t = sqrtl(-log(err) / (2.0 * dist.D2_idx.size()));
+  return (h_D1_D2_G - t) / dist.D2_idx.size();
 }
 
 double prior_LB(dist_t& dist, int64_t G, int64_t j, double err1, double err2) { // Thm 9

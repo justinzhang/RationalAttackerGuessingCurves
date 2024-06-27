@@ -1,8 +1,12 @@
 #include "distribution.hpp"
+
 #include <iostream>
 #include <unordered_set>
 #include <random>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
 
 void print(dist_t& d) {
   std::cout << "-----------------\n";
@@ -36,12 +40,12 @@ void partition_small_d(dist_t& dist, int64_t d) {
   std::uniform_int_distribution<> uniform_dist(1, dist.N);
   std::unordered_set<int> appeared;
 
-  dist.D2.resize(d);
+  dist.D2_idx.resize(d);
   for (int i=0; i<d; ++i) {
     while (1) {
       int choice = uniform_dist(gen);
       if (appeared.insert(choice).second) {
-        dist.D2[i] = choice;
+        dist.D2_idx[i] = choice;
         break;
       }
     }
@@ -57,7 +61,7 @@ void partition_large_d(dist_t& dist, int64_t d) {
   std::mt19937 gen(rd());
   std::shuffle(v.begin(), v.end(), gen);
   for (int i=0; i<d; ++i) {
-    dist.D2[i] = v[i];
+    dist.D2_idx[i] = v[i];
   }
 }
 
@@ -76,7 +80,7 @@ void partition(dist_t& dist, int64_t d) {
   else {
     partition_large_d(dist, d);
   }
-  sort(dist.D2.begin(), dist.D2.end());
+  sort(dist.D2_idx.begin(), dist.D2_idx.end());
 }
 
 void partition(dist_t& dist, double fraction) {
@@ -84,15 +88,77 @@ void partition(dist_t& dist, double fraction) {
     std::cerr << "Invalid fraction. Nothing done." << std::endl;
     return;
   }
-  else if (fraction < 0.1) {
-    partition_small_d(dist, (int64_t) floor(dist.N * fraction));
+  partition(dist, (int64_t) floor(fraction * dist.N));
+}
+
+void write_partition_plain(dist_t& dist, std::string D1_filename, std::string D2_filename) {
+}
+
+void write_partition_pwdfreq(dist_t& dist, std::string D1_filename, std::string D2_filename) {
+}
+
+void write_partition(dist_t& dist, std::string D1_filename, std::string D2_filename, std::string filetype) {
+}
+
+void attack_plain(dist_t& dist, std::string attack_filename) {
+  std::ifstream fdist(dist.filename);
+  if (!fdist.is_open()) {
+    std::cerr << "Error: Can't open the file associated with the distribution. Nothing done." << std::endl;
+    return;
   }
-  else {
-    partition_small_d(dist, (int64_t) floor(dist.N * fraction));
+  std::string pwd;
+  std::unordered_map<std::string, int64_t> hist;
+
+  for (int i=1, j=0; i<=dist.N; ++i) {
+    if (!getline(fdist, pwd)) {
+      std::cerr << "Error: error while reading from the file associated with the distribution. ";
+      std::cerr << "Distribution file should contain " << dist.N << " lines. Nothing done." << std::endl;
+      return;
+    }
+    if (i == dist.D2_idx[j]) {
+      ++j;
+      hist[pwd]++;
+    }
+  }
+
+  std::ifstream fattk(attack_filename);
+  if (!fattk.is_open()) {
+    std::cerr << "Error: Can't open the attack file. Nothing done." << std::endl;
+    return;
+  }
+
+  dist.attack_hits.clear();
+  dist.attack_hits.push_back(0);
+  while (getline(fattk, pwd)) {
+    dist.attack_hits.push_back(1);
   }
 }
 
-void hybrid_attack(std::string attack_filename) {
-  return;
+void attack_pwdfreq(dist_t& dist, std::string attack_filename) {
+  std::ifstream fdist(dist.filename);
+  if (!fdist.is_open()) {
+    std::cerr << "Error: Can't open the file associated with the distribution. Nothing done." << std::endl;
+    return;
+  }
+  std::ifstream fattk(attack_filename);
+  if (!fattk.is_open()) {
+    std::cerr << "Error: Can't open the attack file. Nothing done." << std::endl;
+    return;
+  }
+}
+
+void hybrid_attack(dist_t& dist, std::string attack_filename) {
+  if (dist.filetype == "freqcount") {
+    std::cerr << "Error: Can't attack a frequency-count file. Please specify a plaintext or password-frequency file. Nothing done." << std::endl;
+  }
+  else if (dist.filetype == "plain") {
+    attack_plain(dist, attack_filename);
+  }
+  else if (dist.filetype == "pwdfreq") {
+    attack_pwdfreq(dist, attack_filename);
+  }
+  else {
+    std::cerr << "Error: Invalid filetype. Nothing done." << std::endl;
+  }
 }
 
