@@ -242,12 +242,69 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
   return 0.0;
 }
 
-double LP_LB(dist_t& dist, int64_t G, double q, double iprime, std::vector<double> errs) { // select xhats or not????
-  // errs is of size iprime+1
-  return 0.0;
+double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
+  if (errs.size() != iprime) {
+    std::cerr << "Error. errs must be of size iprime+1." << std::endl;
+    return 0.0;
+  }
+  if (xhats.size() != iprime) {
+    std::cerr << "Error. xhats must be of size iprime+1." << std::endl;
+    return 0.0;
+  }
+
+  int64_t N = dist.N;
+  std::vector<double> eps2s(iprime+1);
+  std::vector<double> eps3s(iprime+1);
+  for (int i=0; i<=iprime; ++i) {
+    eps2s[i] = sqrtl(-N * log(errs[i]) / 2.0) * (((double) (i + 1.0)) / ((double) (N - i)));
+    double log_eps3 = (N - i) * log((1 - xhats[i]) / (1 - q*xhats[i])) - (i + 1) * log(q);
+    eps3s[i] = exp(log_eps3) - 1;
+  }
+
+  int64_t l = ((int64_t) floor(-(log(10000.0) + log((double) N)) / log(q))) + 1;
+  std::vector<double> mesh(l);
+  mesh[l-1] = 1.0 / (10000.0 * N);
+  for (int i=l-2; i>=0; --i) {
+    mesh[i] = mesh[i+1] * q;
+  }
+
+  double res = 1.0;
+  for (int64_t idx=1; idx<=l+1; ++idx) {
+    res = std::min(res, LP_lower(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename));
+  }
+  return res;
 }
 
-double LP_UB(dist_t& dist, int64_t G, double q, double iprime, std::vector<double> errs) { // select xhats or not????
-  // errs is of size iprime+1
-  return 0.0;
+double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
+  if (errs.size() != iprime) {
+    std::cerr << "Error. errs must be of size iprime+1." << std::endl;
+    return 0.0;
+  }
+  if (xhats.size() != iprime) {
+    std::cerr << "Error. xhats must be of size iprime+1." << std::endl;
+    return 0.0;
+  }
+
+  int64_t N = dist.N;
+
+  std::vector<double> eps2s(iprime+1);
+  std::vector<double> eps3s(iprime+1);
+  for (int i=0; i<=iprime; ++i) {
+    eps2s[i] = sqrtl(-N * log(errs[i]) / 2.0) * (((double) (i + 1.0)) / ((double) (N - i)));
+    double log_eps3 = (N - i) * log((1 - xhats[i]) / (1 - q*xhats[i])) - (i + 1) * log(q);
+    eps3s[i] = exp(log_eps3) - 1;
+  }
+
+  int64_t l = ((int64_t) floor(-(log(10000.0) + log((double) N)) / log(q))) + 1;
+  std::vector<double> mesh(l);
+  mesh[l-1] = 1.0 / (10000.0 * N);
+  for (int i=l-2; i>=0; --i) {
+    mesh[i] = mesh[i+1] * q;
+  }
+
+  double res = 1.0;
+  for (int64_t idx=1; idx<=l+1; ++idx) {
+    res = std::max(res, LP_upper(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename));
+  }
+  return res;
 }
