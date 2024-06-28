@@ -2,11 +2,11 @@
 
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 #include <random>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#include <unordered_map>
 
 void print(dist_t& d) {
   std::cout << "-----------------\n";
@@ -203,6 +203,7 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
 
   int64_t cur_hits = 0;
   dist.D1_attack_hits.clear();
+  dist.distinct_D1 = D1_pwdfreq.size();
   for (int i=0; i<D1_pwdfreq.size() && cur_hits<d; ++i) {
     if (D2_hist[D1_pwdfreq[i].first] != 0) {
       cur_hits += D2_hist[D1_pwdfreq[i].first];
@@ -219,69 +220,30 @@ void partition(dist_t& dist, double fraction, std::string D1_filename, std::stri
   partition(dist, (int64_t) floor(fraction * dist.N), D1_filename, D2_filename, filetype="plain");
 }
 
+void model_attack(dist_t& dist, std::string attack_filename) {
+  if (dist.D2_idx.size() == 0) {
+    std::cerr << "Error: Must partitoin before attacking. Nothing done." << std::endl;
+  }
 
-// void attack_plain(dist_t& dist, std::string attack_filename) {
-//   std::ifstream fdist(dist.filename);
-//   if (!fdist.is_open()) {
-//     std::cerr << "Error: Can't open the file associated with the distribution. Nothing done." << std::endl;
-//     return;
-//   }
-//   std::string pwd;
-//   std::unordered_map<std::string, int64_t> hist;
-//
-//   for (int i=1, j=0; i<=dist.N; ++i) {
-//     if (!getline(fdist, pwd)) {
-//       std::cerr << "Error: error while reading from the file associated with the distribution. ";
-//       std::cerr << "Distribution file should contain " << dist.N << " lines. Nothing done." << std::endl;
-//       return;
-//     }
-//     if (i == dist.D2_idx[j]) {
-//       ++j;
-//       hist[pwd]++;
-//     }
-//   }
-//   fdist.close();
-//
-//   std::ifstream fattk(attack_filename);
-//   if (!fattk.is_open()) {
-//     std::cerr << "Error: Can't open the attack file. Nothing done." << std::endl;
-//     return;
-//   }
-//
-//   dist.attack_hits.clear();
-//   dist.attack_hits.push_back(0);
-//   while (getline(fattk, pwd)) {
-//     dist.attack_hits.push_back(1);
-//   }
-//   
-//   fattk.close();
-// }
-//
-// void attack_pwdfreq(dist_t& dist, std::string attack_filename) {
-//   std::ifstream fdist(dist.filename);
-//   if (!fdist.is_open()) {
-//     std::cerr << "Error: Can't open the file associated with the distribution. Nothing done." << std::endl;
-//     return;
-//   }
-//   std::ifstream fattk(attack_filename);
-//   if (!fattk.is_open()) {
-//     std::cerr << "Error: Can't open the attack file. Nothing done." << std::endl;
-//     return;
-//   }
-// }
-//
-// void hybrid_attack(dist_t& dist, std::string attack_filename) {
-//   if (dist.filetype == "freqcount") {
-//     std::cerr << "Error: Can't attack a frequency-count file. Please specify a plaintext or password-frequency file. Nothing done." << std::endl;
-//   }
-//   else if (dist.filetype == "plain") {
-//     attack_plain(dist, attack_filename);
-//   }
-//   else if (dist.filetype == "pwdfreq") {
-//     attack_pwdfreq(dist, attack_filename);
-//   }
-//   else {
-//     std::cerr << "Error: Invalid filetype. Nothing done." << std::endl;
-//   }
-// }
+  std::ifstream fattk(attack_filename);
+  if (!fattk.is_open()) {
+    std::cerr << "Error: Can't open attack file " << attack_filename << ". Nothing done." << std::endl;
+    return;
+  }
+
+  dist.model_attack_filename = attack_filename;
+  dist.model_attack_hits.clear();
+
+  std::string pwd;
+  std::unordered_set<std::string> seen;
+  int64_t guesses = 1;
+  int64_t cur_hits = 0;
+  while (getline(fattk, pwd)) {
+    if (seen.insert(pwd).second && dist.D2_hist[pwd] != 0) {
+      cur_hits += dist.D2_hist[pwd];
+      dist.model_attack_hits.push_back(std::make_pair(guesses, cur_hits));
+    }
+    ++guesses;
+  }
+}
 
