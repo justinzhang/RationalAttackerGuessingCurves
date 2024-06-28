@@ -1,11 +1,11 @@
 #include "pwdio.hpp"
+#include "distribution.hpp"
+
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
-
-#include "distribution.hpp"
 
 void parse_freqcount(dist_t& dist, std::vector<std::pair<int64_t, int64_t>>& freqcount) {
   std::sort(freqcount.rbegin(), freqcount.rend()); // sort descending
@@ -76,7 +76,7 @@ void read_pwdfreq(dist_t& dist, std::string filename) { // pwd freq seperated wi
       cnt[freq]++;
     }
     else {
-      std::cerr << "invalid line: " << line << std::endl;
+      std::cerr << "Error: Invalid line: " << line << " in file " << filename << std::endl;
     }
   }
   fin.close();
