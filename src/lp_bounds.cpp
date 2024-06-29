@@ -1,6 +1,7 @@
 #include "lp_bounds.hpp"
 #include "helpers.hpp"
 
+#include <iostream>
 #include <unordered_map>
 
 double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats, std::string logfilename) {
@@ -16,6 +17,7 @@ double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
   try {
     GRBEnv env = GRBEnv(true);
     env.set("LogFile", logfilename);
+    env.set(GRB_IntParam_OutputFlag, 0);
     env.start();
 
     GRBModel model = GRBModel(env);
@@ -92,25 +94,25 @@ double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
     model.optimize();
 
     // status/solution
-    double res = 1.0;
     int status = model.get(GRB_IntAttr_Status);
 		if (status == GRB_OPTIMAL) {
-      res = std::min(res, model.get(GRB_DoubleAttr_ObjVal));
+      return model.get(GRB_DoubleAttr_ObjVal);
 		}
-		else if (status == GRB_SOLUTION_LIMIT) {
-      std::cerr << "The number of solutions found reached the value specified in the SolutionLimit parameter" << std::endl;
-		}
-		else if (status == GRB_TIME_LIMIT) {
-      std::cerr << "Optimization terminated because the time expended exceeded the value specified in the TimeLimit parameter." << std::endl;
-		}
-    else if (status == GRB_INFEASIBLE) {
-      std::cerr << "The model is infeasible" << std::endl;
+    else {
+      return -1.0;
     }
-		else {
-      std::cerr << "Optimization was stopped with status code " << status << std::endl;
-		}
-
-    return res;
+		// else if (status == GRB_SOLUTION_LIMIT) {
+  //     std::cerr << "The number of solutions found reached the value specified in the SolutionLimit parameter" << std::endl;
+		// }
+		// else if (status == GRB_TIME_LIMIT) {
+  //     std::cerr << "Optimization terminated because the time expended exceeded the value specified in the TimeLimit parameter." << std::endl;
+		// }
+    // else if (status == GRB_INFEASIBLE) {
+    //   std::cerr << "The model is infeasible" << std::endl;
+    // }
+		// else {
+  //     std::cerr << "Optimization was stopped with status code " << status << std::endl;
+		// }
 
   } catch(GRBException e) {
     std::cerr << "Error code = " << e.getErrorCode() << std::endl;
@@ -135,6 +137,7 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
   try {
     GRBEnv env = GRBEnv(true);
     env.set("LogFile", logfilename);
+    env.set(GRB_IntParam_OutputFlag, 0);
     env.start();
 
     GRBModel model = GRBModel(env);
@@ -207,30 +210,29 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
       model.addConstr(c_var <= hx_vars[idx-1], "4) c <= h_idx");
     }
 
-
     // optimize 
     model.optimize();
 
     // status/solution
-    double res = 1.0;
     int status = model.get(GRB_IntAttr_Status);
 		if (status == GRB_OPTIMAL) {
-      res = std::min(res, model.get(GRB_DoubleAttr_ObjVal));
+      return model.get(GRB_DoubleAttr_ObjVal);
 		}
-		else if (status == GRB_SOLUTION_LIMIT) {
-      std::cerr << "The number of solutions found reached the value specified in the SolutionLimit parameter" << std::endl;
-		}
-		else if (status == GRB_TIME_LIMIT) {
-      std::cerr << "Optimization terminated because the time expended exceeded the value specified in the TimeLimit parameter." << std::endl;
-		}
-    else if (status == GRB_INFEASIBLE) {
-      std::cerr << "The model is infeasible" << std::endl;
+    else {
+      return -1.0;
     }
-		else {
-      std::cerr << "Optimization was stopped with status code " << status << std::endl;
-		}
-
-    return res;
+		// else if (status == GRB_SOLUTION_LIMIT) {
+  //     std::cerr << "The number of solutions found reached the value specified in the SolutionLimit parameter" << std::endl;
+		// }
+		// else if (status == GRB_TIME_LIMIT) {
+  //     std::cerr << "Optimization terminated because the time expended exceeded the value specified in the TimeLimit parameter." << std::endl;
+		// }
+  //   else if (status == GRB_INFEASIBLE) {
+  //     std::cerr << "The model is infeasible" << std::endl;
+  //   }
+		// else {
+  //     std::cerr << "Optimization was stopped with status code " << status << std::endl;
+		// }
 
   } catch(GRBException e) {
     std::cerr << "Error code = " << e.getErrorCode() << std::endl;
@@ -243,12 +245,12 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 }
 
 double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
-  if (errs.size() != iprime) {
-    std::cerr << "Error. errs must be of size iprime+1." << std::endl;
+  if (errs.size() != iprime + 1) {
+    std::cerr << "Error: errs must be of size iprime+1." << std::endl;
     return 0.0;
   }
-  if (xhats.size() != iprime) {
-    std::cerr << "Error. xhats must be of size iprime+1." << std::endl;
+  if (xhats.size() != iprime + 1) {
+    std::cerr << "Error: xhats must be of size iprime+1." << std::endl;
     return 0.0;
   }
 
@@ -261,7 +263,7 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     eps3s[i] = exp(log_eps3) - 1;
   }
 
-  int64_t l = ((int64_t) floor(-(log(10000.0) + log((double) N)) / log(q))) + 1;
+  int64_t l = ((int64_t) floor((log(10000.0) + log((double) N)) / log(q))) + 1;
   std::vector<double> mesh(l);
   mesh[l-1] = 1.0 / (10000.0 * N);
   for (int i=l-2; i>=0; --i) {
@@ -269,19 +271,29 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
   }
 
   double res = 1.0;
+  double lp_bound;
+  bool feasible = false;
   for (int64_t idx=1; idx<=l+1; ++idx) {
-    res = std::min(res, LP_lower(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename));
+    lp_bound = LP_lower(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename);
+    if (lp_bound > 0) {
+      feasible = true;
+      res = std::min(res, lp_bound);
+    }
+  }
+  if (!feasible) {
+    std::cerr << "Infeasible distribution!!!" << std::endl;
+    return -1.0;
   }
   return res;
 }
 
 double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
-  if (errs.size() != iprime) {
-    std::cerr << "Error. errs must be of size iprime+1." << std::endl;
+  if (errs.size() != iprime + 1) {
+    std::cerr << "Error: errs must be of size iprime+1." << std::endl;
     return 0.0;
   }
-  if (xhats.size() != iprime) {
-    std::cerr << "Error. xhats must be of size iprime+1." << std::endl;
+  if (xhats.size() != iprime + 1) {
+    std::cerr << "Error: xhats must be of size iprime+1." << std::endl;
     return 0.0;
   }
 
@@ -295,16 +307,26 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     eps3s[i] = exp(log_eps3) - 1;
   }
 
-  int64_t l = ((int64_t) floor(-(log(10000.0) + log((double) N)) / log(q))) + 1;
+  int64_t l = ((int64_t) floor((log(10000.0) + log((double) N)) / log(q))) + 1;
   std::vector<double> mesh(l);
   mesh[l-1] = 1.0 / (10000.0 * N);
   for (int i=l-2; i>=0; --i) {
     mesh[i] = mesh[i+1] * q;
   }
 
-  double res = 1.0;
+  double res = 0.0;
+  double lp_bound;
+  bool feasible = false;
   for (int64_t idx=1; idx<=l+1; ++idx) {
-    res = std::max(res, LP_upper(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename));
+    lp_bound = LP_upper(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename);
+    if (lp_bound > 0) {
+      feasible = true;
+      res = std::max(res, lp_bound);
+    }
+  }
+  if (!feasible) {
+    std::cerr << "Infeasible distribution!!!" << std::endl;
+    return -1.0;
   }
   return res;
 }

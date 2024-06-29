@@ -32,8 +32,8 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
     }
   }
   int64_t h_D1_D2_G = dist.D1_attack_hits[lo].second;
+  double t = sqrtl(-log(err) * dist.D2_idx.size() / 2.0);
 
-  double t = sqrtl(-log(err) / (2.0 * dist.D2_idx.size()));
   return ((double) h_D1_D2_G - t) / dist.D2_idx.size();
 }
 
@@ -59,9 +59,9 @@ double extended_LB(dist_t& dist, int64_t G, double err) { // Coro 7
       hi = mid - 1;
     }
   }
-  int64_t h_D1_D2_G = (dist.D1_attack_hits.size()==0 ? 0 : dist.D1_attack_hits.back().second) + dist.model_attack_hits[lo].second;
+  int64_t h_D1_D2_G = ((dist.D1_attack_hits.size() == 0) ? 0 : dist.D1_attack_hits.back().second) + dist.model_attack_hits[lo].second;
+  double t = sqrtl(-log(err) * dist.D2_idx.size() / 2.0);
 
-  double t = sqrtl(-log(err) / (2.0 * dist.D2_idx.size()));
   return ((double) h_D1_D2_G - t) / dist.D2_idx.size();
 }
 

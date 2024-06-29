@@ -8,14 +8,30 @@
 #include <fstream>
 #include <sstream>
 
-void print(dist_t& d) {
+void print1(dist_t& d) {
   std::cout << "-----------------\n";
   std::cout << "Dataset\n";
-  std::cout << "Filename: " << d.filename << "; Filetype:" << d.filetype << '\n';
+  std::cout << "Filename: " << d.filename << "; Filetype: " << d.filetype << '\n';
   std::cout << "Distinct: " << d.distinct << "; Total: " << d.N << '\n';
   std::cout << "freqcount:\n";
   for (auto x:d.freqcount) {
     std::cout << "  (" << x.first << ", " << x.second << ")\n";
+  }
+  std::cout << "-----------------\n";
+}
+
+void print2(dist_t& d) {
+  std::cout << "-----------------\n";
+  std::cout << "Dataset\n";
+  std::cout << "Filename: " << d.filename << "; Filetype: " << d.filetype << '\n';
+  std::cout << "Distinct: " << d.distinct << "; Total: " << d.N << '\n';
+  std::cout << "Distinct D1: " << d.distinct_D1 << std::endl;
+  std::cout << "D1 attack: " << std::endl;
+  // for (auto x:d.D1_attack_hits) {
+  //   std::cout << x.first << ' ' << x.second << std::endl;
+  // }
+  for (int i=0; i<15; ++i) {
+    std::cout << d.D1_attack_hits[i].first << ' ' << d.D1_attack_hits[i].second << std::endl;
   }
   std::cout << "-----------------\n";
 }
@@ -102,7 +118,7 @@ void count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& 
           ++in_D2_cnt;
         }
         hist_D1[pwd] += (freq - in_D2_cnt);
-        hist_D2[pwd] += in_D2_cnt;
+        if (in_D2_cnt != 0) hist_D2[pwd] += in_D2_cnt;
       }
       else {
         std::cerr << "Error: Invalid line: " << line << " in file " << dist.filename << std::endl;
@@ -170,7 +186,7 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
     return;
   }
 
-  if (filetype != "plain" && filetype != "pwdfreq") {
+  if (filetype != "plain" && filetype != "pwdfreq" && (D1_filename != "" || D2_filename != "")) {
     std::cerr << "Error: Invalid filetype " << filetype << ". Must be either \"plain\" or \"pwdfreq\". Nothing done." << std::endl; 
     return;
   }
@@ -185,8 +201,8 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
 
   std::unordered_map<std::string, int64_t> D1_hist;
   std::unordered_map<std::string, int64_t> D2_hist;
-  dist.D2_hist = D2_hist;
   count_in_partition(dist, D1_hist, D2_hist);
+  dist.D2_hist = D2_hist;
   write_partition(dist, D1_hist, D2_hist, D1_filename, D2_filename, filetype);
 
   // precompute dictionary attack with D1

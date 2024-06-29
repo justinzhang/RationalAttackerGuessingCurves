@@ -23,7 +23,10 @@ struct dist_t {
   int64_t distinct_D1;
 };
 
-void print(dist_t&);
+void print1(dist_t&);
+void print2(dist_t&);
+void print3(dist_t&);
+void print4(dist_t&);
 
 int64_t most_frequent(dist_t&, int64_t);
 
