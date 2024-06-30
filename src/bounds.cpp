@@ -34,7 +34,7 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
   int64_t h_D1_D2_G = dist.D1_attack_hits[lo].second;
   double t = sqrtl(-log(err) * dist.D2_idx.size() / 2.0);
 
-  return ((double) h_D1_D2_G - t) / dist.D2_idx.size();
+  return std::max(((double) h_D1_D2_G - t) / dist.D2_idx.size(), 0.0);
 }
 
 double extended_LB(dist_t& dist, int64_t G, double err) { // Coro 7

@@ -284,7 +284,7 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     std::cerr << "Infeasible distribution!!!" << std::endl;
     return -1.0;
   }
-  return res;
+  return std::max(res, 0.0);
 }
 
 double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
@@ -328,5 +328,5 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     std::cerr << "Infeasible distribution!!!" << std::endl;
     return -1.0;
   }
-  return res;
+  return std::min(res, 1.0);
 }

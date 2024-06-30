@@ -117,8 +117,8 @@ void count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& 
           ++i;
           ++in_D2_cnt;
         }
-        hist_D1[pwd] += (freq - in_D2_cnt);
-        if (in_D2_cnt != 0) hist_D2[pwd] += in_D2_cnt;
+        if (freq - in_D2_cnt != 0) hist_D1[pwd] = (freq - in_D2_cnt);
+        if (in_D2_cnt != 0) hist_D2[pwd] = in_D2_cnt;
       }
       else {
         std::cerr << "Error: Invalid line: " << line << " in file " << dist.filename << std::endl;
