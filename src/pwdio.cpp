@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <cmath>
 
 void parse_freqcount(dist_t& dist, std::vector<std::pair<int64_t, int64_t>>& freqcount) {
   std::sort(freqcount.rbegin(), freqcount.rend()); // sort descending

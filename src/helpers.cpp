@@ -49,7 +49,7 @@ double bcdf_direct(int64_t i, int64_t N, double p) {
 double bcdf_normal_estimate(int64_t i, int64_t N, double p) {
   double mean = N * p;
   double var = N * p * (1-p);
-  return 0.5 * std::erfc(-((i + 0.5 - mean) / sqrtl(var)) / std::sqrtl((double) 2.0));
+  return 0.5 * std::erfc(-((i + 0.5 - mean) / sqrt(var)) / sqrt((double) 2.0));
 }
 
 double bcdf(int64_t i, int64_t N, double p) {

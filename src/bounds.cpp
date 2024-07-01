@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 #include "bounds.hpp"
 #include "helpers.hpp"
@@ -7,7 +8,7 @@
 
 double freq_UB(dist_t& dist, int64_t G, double err) { // Coro 4
   int64_t top_G_freq = most_frequent(dist, G);
-  double eps = sqrtl(-log(err) / (2.0 * dist.N));
+  double eps = sqrt(-log(err) / (2.0 * dist.N));
   return std::min(((double) top_G_freq) / ((double) dist.N) + eps, 1.0);
 }
 
@@ -32,7 +33,7 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
     }
   }
   int64_t h_D1_D2_G = dist.D1_attack_hits[lo].second;
-  double t = sqrtl(-log(err) * dist.D2_idx.size() / 2.0);
+  double t = sqrt(-log(err) * dist.D2_idx.size() / 2.0);
 
   return std::max(((double) h_D1_D2_G - t) / dist.D2_idx.size(), 0.0);
 }
@@ -60,7 +61,7 @@ double extended_LB(dist_t& dist, int64_t G, double err) { // Coro 7
     }
   }
   int64_t h_D1_D2_G = ((dist.D1_attack_hits.size() == 0) ? 0 : dist.D1_attack_hits.back().second) + dist.model_attack_hits[lo].second;
-  double t = sqrtl(-log(err) * dist.D2_idx.size() / 2.0);
+  double t = sqrt(-log(err) * dist.D2_idx.size() / 2.0);
 
   return ((double) h_D1_D2_G - t) / dist.D2_idx.size();
 }
@@ -94,8 +95,8 @@ double prior_LB(dist_t& dist, int64_t G, int64_t j, double err1, double err2) { 
   }
 
   double f_SL = ((double) dist.preftotal[lo]) / ((double) dist.N) - temp;
-  double t = sqrtl(-dist.N * j * j * log(err1) / 2);
-  double eps = sqrtl(-log(err2) / (2.0 * dist.N));
+  double t = sqrt(-dist.N * j * j * log(err1) / 2.0);
+  double eps = sqrt(-log(err2) / (2.0 * dist.N));
 
   return std::max(f_SL - t/dist.N - eps, 0.0);
 }
