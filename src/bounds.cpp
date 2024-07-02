@@ -101,6 +101,30 @@ double prior_LB(dist_t& dist, int64_t G, int64_t j, double err1, double err2) { 
   return std::max(f_SL - t/dist.N - eps, 0.0);
 }
 
+double prior_LB(dist_t& dist, int64_t G, int64_t j, double err) { // Thm 9
+  return prior_LB(dist, G, j, err/2, err/2);
+}
+
+double best_prior_LB(dist_t& dist, int64_t G, double err1, double err2) { // Thm 9
+  if (G <= dist.N) {
+    std::cerr << "Error: No L value satisfy the constraints on the parameters." << std::endl;
+    return -1.0;
+  }
+  double res = 0.0;
+  for (int64_t j=2; j<=1000; ++j) {
+    res = std::max(res, prior_LB(dist, G, j, err1, err2));
+  }
+  return res;
+}
+
+double best_prior_LB(dist_t& dist, int64_t G, double err) {
+  if (G <= dist.N) {
+    std::cerr << "Error: No L value satisfy the constraints on the parameters." << std::endl;
+    return -1.0;
+  }
+  return best_prior_LB(dist, G, err/2, err/2);
+}
+
 
 // PIN paper
 

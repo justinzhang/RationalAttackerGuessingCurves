@@ -4,8 +4,9 @@
 #include <iostream>
 #include <unordered_map>
 #include <cmath>
+#include <numeric>
 
-double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats, std::string logfilename) {
+double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats) {
 
   int64_t l = mesh.size();
   int64_t N = dist.N;
@@ -17,7 +18,6 @@ double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 
   try {
     GRBEnv env = GRBEnv(true);
-    env.set("LogFile", logfilename);
     env.set(GRB_IntParam_OutputFlag, 0);
     env.start();
 
@@ -125,7 +125,7 @@ double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
   return 0.0;
 }
 
-double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats, std::string logfilename) {
+double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats) {
 
   int64_t l = mesh.size();
   int64_t N = dist.N;
@@ -137,7 +137,6 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 
   try {
     GRBEnv env = GRBEnv(true);
-    env.set("LogFile", logfilename);
     env.set(GRB_IntParam_OutputFlag, 0);
     env.start();
 
@@ -245,7 +244,8 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
   return 0.0;
 }
 
-double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
+double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
+  // Note: error rate will be 2 * sum(errs)
   if (errs.size() != iprime + 1) {
     std::cerr << "Error: errs must be of size iprime+1." << std::endl;
     return 0.0;
@@ -275,7 +275,7 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
   double lp_bound;
   bool feasible = false;
   for (int64_t idx=1; idx<=l+1; ++idx) {
-    lp_bound = LP_lower(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename);
+    lp_bound = LP_lower(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats);
     if (lp_bound > 0) {
       feasible = true;
       res = std::min(res, lp_bound);
@@ -288,7 +288,8 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
   return std::max(res, 0.0);
 }
 
-double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats, std::string logfilename) {
+double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
+  // Note: error rate will be 2 * sum(errs)
   if (errs.size() != iprime + 1) {
     std::cerr << "Error: errs must be of size iprime+1." << std::endl;
     return 0.0;
@@ -319,7 +320,7 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
   double lp_bound;
   bool feasible = false;
   for (int64_t idx=1; idx<=l+1; ++idx) {
-    lp_bound = LP_upper(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats, logfilename);
+    lp_bound = LP_upper(dist, G, mesh, q, iprime, idx, eps2s, eps3s, xhats);
     if (lp_bound > 0) {
       feasible = true;
       res = std::max(res, lp_bound);
@@ -330,4 +331,28 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     return -1.0;
   }
   return std::min(res, 1.0);
+}
+
+double LP_LB(dist_t& dist, int64_t G, double err) {
+  double q = 1.002;
+  int64_t iprime = 4;
+  std::vector<double> xhats = {7.0/dist.N, 11.0/dist.N, 14.0/dist.N, 16.3/dist.N, 18.5/dist.N};
+  std::vector<double> errs = {0.00009, 0.000165, 0.00175, 0.00175, 0.0012};
+  double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
+  for (auto& x:errs) {
+    x *= (err / (2.0 * sum));
+  }
+  return LP_LB(dist, G, q, iprime, errs, xhats);
+}
+
+double LP_UB(dist_t& dist, int64_t G, double err) {
+  double q = 1.002;
+  int64_t iprime = 4;
+  std::vector<double> xhats = {7.0/dist.N, 11.0/dist.N, 14.0/dist.N, 16.3/dist.N, 18.5/dist.N};
+  std::vector<double> errs = {0.00009, 0.000165, 0.00175, 0.00175, 0.0012};
+  double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
+  for (auto& x:errs) {
+    x *= (err / (2.0 * sum));
+  }
+  return LP_UB(dist, G, q, iprime, errs, xhats);
 }

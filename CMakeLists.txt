@@ -32,7 +32,7 @@ target_link_libraries(test ${GUROBI_CPPLIB})
 
 
 # interactive executable
-add_executable(interactive src/interactive.cpp ${SRC_FILES})
+add_executable(interactive interactive.cpp ${SRC_FILES})
 target_include_directories(interactive PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(GUROBI_PATH /Library/gurobi1102/macos_universal2)
 set(GUROBI_CPPLIB -L${GUROBI_PATH}/lib -lgurobi_c++ -lgurobi110 -lm)
