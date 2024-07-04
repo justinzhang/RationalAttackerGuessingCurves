@@ -241,7 +241,7 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
     std::cerr << "Exception during optimization" << std::endl;
   }
 
-  return 0.0;
+  return 1.0;
 }
 
 double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
@@ -259,7 +259,7 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
   std::vector<double> eps2s(iprime+1);
   std::vector<double> eps3s(iprime+1);
   for (int i=0; i<=iprime; ++i) {
-    eps2s[i] = sqrt(-N * log(errs[i]) / 2.0) * (((double) (i + 1.0)) / ((double) (N - i)));
+    eps2s[i] = sqrt(-N * log(errs[i]) / 2.0) * ((((double) i) + 1.0) / ((double) (N - i)));
     double log_eps3 = (N - i) * log((1 - xhats[i]) / (1 - q*xhats[i])) - (i + 1) * log(q);
     eps3s[i] = exp(log_eps3) - 1;
   }
@@ -304,7 +304,7 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
   std::vector<double> eps2s(iprime+1);
   std::vector<double> eps3s(iprime+1);
   for (int i=0; i<=iprime; ++i) {
-    eps2s[i] = sqrt(-N * log(errs[i]) / 2.0) * (((double) (i + 1.0)) / ((double) (N - i)));
+    eps2s[i] = sqrt(-N * log(errs[i]) / 2.0) * ((((double) i) + 1.0) / ((double) (N - i)));
     double log_eps3 = (N - i) * log((1 - xhats[i]) / (1 - q*xhats[i])) - (i + 1) * log(q);
     eps3s[i] = exp(log_eps3) - 1;
   }

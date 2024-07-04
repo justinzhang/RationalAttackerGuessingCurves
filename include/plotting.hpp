@@ -1,5 +1,4 @@
-#include "distribution.hpp"
-#include "bounds.hpp"
-#include "lp_bounds.hpp"
+#include <vector>
+#include <string>
 
-void 
+void tikz_plot(std::vector<std::vector<std::pair<int64_t, double>>>&, std::vector<std::string>&, std::vector<std::string>&, std::string);
