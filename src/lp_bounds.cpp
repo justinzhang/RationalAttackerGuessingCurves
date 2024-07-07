@@ -1,10 +1,13 @@
 #include "lp_bounds.hpp"
-#include "helpers.hpp"
 
 #include <iostream>
 #include <unordered_map>
 #include <cmath>
 #include <numeric>
+
+#include "gurobi_c++.h"
+
+#include "helpers.hpp"
 
 double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats) {
 
@@ -356,3 +359,4 @@ double LP_UB(dist_t& dist, int64_t G, double err) {
   }
   return LP_UB(dist, G, q, iprime, errs, xhats);
 }
+

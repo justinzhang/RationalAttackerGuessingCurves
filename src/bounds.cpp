@@ -1,7 +1,8 @@
+#include "bounds.hpp"
+
 #include <iostream>
 #include <cmath>
 
-#include "bounds.hpp"
 #include "helpers.hpp"
 
 // LP paper
@@ -194,3 +195,4 @@ double new_UB(dist_t& dist, int64_t G, double err) { // Thm 2
 
   return mid;
 }
+

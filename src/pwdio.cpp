@@ -1,5 +1,4 @@
 #include "pwdio.hpp"
-#include "distribution.hpp"
 
 #include <vector>
 #include <iostream>
@@ -7,6 +6,8 @@
 #include <sstream>
 #include <unordered_map>
 #include <cmath>
+
+#include "distribution.hpp"
 
 void parse_freqcount(dist_t& dist, std::vector<std::pair<int64_t, int64_t>>& freqcount) {
   std::sort(freqcount.rbegin(), freqcount.rend()); // sort descending

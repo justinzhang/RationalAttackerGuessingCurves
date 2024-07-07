@@ -175,7 +175,7 @@ void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
   }
 }
 
-void partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_filename, std::string filetype="plain") {
+void partition(dist_t& dist, int64_t d, std::string D1_filename="", std::string D2_filename="", std::string filetype="plain") {
   if (d > dist.N) {
     std::cerr << "Error: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done." << std::endl;
     return;
@@ -199,31 +199,81 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
   }
   sort(dist.D2_idx.begin(), dist.D2_idx.end());
 
-  std::unordered_map<std::string, int64_t> D1_hist;
-  std::unordered_map<std::string, int64_t> D2_hist;
-  count_in_partition(dist, D1_hist, D2_hist);
-  dist.D2_hist = D2_hist;
-  write_partition(dist, D1_hist, D2_hist, D1_filename, D2_filename, filetype);
-
-  // precompute dictionary attack with D1
-  std::vector<std::pair<std::string, int64_t>> D1_pwdfreq;
-  for (auto& x:D1_hist) {
-    D1_pwdfreq.push_back(std::make_pair(x.first, x.second));
-  }
-  sort(D1_pwdfreq.begin(), D1_pwdfreq.end(), [&](std::pair<std::string, int64_t>& a, std::pair<std::string, int64_t>& b) {
-    if (a.second == b.second) {
-      return D2_hist[a.first] > D2_hist[b.first];
+  if (dist.filetype == "freqcount") {
+    if (D1_filename.size() != 0 || D2_filename.size() != 0) {
+      std::cerr << "Note: Samples in format 'freqcount', can't retrieve actual passwords. Partition done but nothing written to file(s)." << std::endl;
     }
-    return a.second > b.second;
-  });
+    dist.D2_hist.clear();
 
-  int64_t cur_hits = 0;
-  dist.D1_attack_hits.clear();
-  dist.distinct_D1 = D1_pwdfreq.size();
-  for (int i=0; i<D1_pwdfreq.size() && cur_hits<d; ++i) {
-    if (D2_hist[D1_pwdfreq[i].first] != 0) {
-      cur_hits += D2_hist[D1_pwdfreq[i].first];
-      dist.D1_attack_hits.push_back(std::make_pair(i+1, cur_hits));
+    std::vector<int64_t> freqs;
+    for (auto fc:dist.freqcount) {
+      for (int j=0; j<fc.second; ++j) {
+        freqs.push_back(fc.first);
+      }
+    }
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(freqs.begin(), freqs.end(), gen);
+    
+    std::unordered_map<int64_t, int64_t> hist_D1;
+    std::unordered_map<int64_t, int64_t> hist_D2;
+    int64_t cumulative_freq = 0;
+    int64_t i = 0;
+    int64_t pwd_id = 1;
+
+    for (int64_t pwd_id=0; pwd_id<freqs.size(); ++pwd_id) {
+      cumulative_freq += freqs[pwd_id];
+      int64_t in_D2_cnt = 0;
+      while (i < dist.D2_idx.size() && dist.D2_idx[i] <= cumulative_freq) {
+        ++i;
+        ++in_D2_cnt;
+      }
+      if (freqs[pwd_id] - in_D2_cnt != 0) hist_D1[pwd_id] = (freqs[pwd_id] - in_D2_cnt);
+      if (in_D2_cnt != 0) hist_D2[pwd_id] = in_D2_cnt;
+    }
+
+    std::vector<std::pair<int64_t, int64_t>> D1_pwdfreq;
+    for (auto x:hist_D1) {
+      D1_pwdfreq.push_back(x);
+    }
+    sort(D1_pwdfreq.begin(), D1_pwdfreq.end(), [&](std::pair<int64_t, int64_t>& a, std::pair<int64_t, int64_t>& b) {
+      return a.second > b.second;
+    });
+
+    int64_t cur_hits = 0;
+    dist.D1_attack_hits.clear();
+    dist.distinct_D1 = D1_pwdfreq.size();
+    for (int i=0; i<D1_pwdfreq.size() && cur_hits<d; ++i) {
+      if (hist_D2[D1_pwdfreq[i].first] != 0) {
+        cur_hits += hist_D2[D1_pwdfreq[i].first];
+        dist.D1_attack_hits.push_back(std::make_pair(i+1, cur_hits));
+      }
+    }
+  }
+  else {
+    std::unordered_map<std::string, int64_t> D1_hist;
+    std::unordered_map<std::string, int64_t> D2_hist;
+    count_in_partition(dist, D1_hist, D2_hist);
+    dist.D2_hist = D2_hist;
+    write_partition(dist, D1_hist, D2_hist, D1_filename, D2_filename, filetype);
+
+    // precompute dictionary attack with D1
+    std::vector<std::pair<std::string, int64_t>> D1_pwdfreq;
+    for (auto x:D1_hist) {
+      D1_pwdfreq.push_back(x);
+    }
+    sort(D1_pwdfreq.begin(), D1_pwdfreq.end(), [&](std::pair<std::string, int64_t>& a, std::pair<std::string, int64_t>& b) {
+      return a.second > b.second;
+    });
+
+    int64_t cur_hits = 0;
+    dist.D1_attack_hits.clear();
+    dist.distinct_D1 = D1_pwdfreq.size();
+    for (int i=0; i<D1_pwdfreq.size() && cur_hits<d; ++i) {
+      if (D2_hist[D1_pwdfreq[i].first] != 0) {
+        cur_hits += D2_hist[D1_pwdfreq[i].first];
+        dist.D1_attack_hits.push_back(std::make_pair(i+1, cur_hits));
+      }
     }
   }
 }

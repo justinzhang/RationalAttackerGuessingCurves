@@ -47,7 +47,7 @@ void tikz_plot(std::vector<std::vector<std::pair<int64_t, double>>>& data, std::
 
   fout << "    xticklabels={";
   for (int64_t i=lo; i<=hi; ++i) {
-    fout << "$10^" << i << ((i == hi) ? "$" : "$,");
+    fout << "$10^{" << i << ((i == hi) ? "}$" : "}$,");
   }
   fout << "},\n";
 

@@ -1,4 +1,5 @@
 #include "helpers.hpp"
+
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -75,3 +76,4 @@ double bcdf(int64_t i, int64_t N, double p) {
 //     return solve(f, l, m, r, eps, fl, fm, fr, area(l, r, fl, fm, fr));
 //   }
 // }
+

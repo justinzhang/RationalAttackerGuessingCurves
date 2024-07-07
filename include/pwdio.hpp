@@ -1,7 +1,8 @@
 #pragma once
 
-#include "distribution.hpp"
 #include <vector>
+
+#include "distribution.hpp"
 
 void parse_freqcount(dist_t&, std::vector<std::pair<int64_t, int64_t>>&);
 void read_plain(dist_t&, std::string);
