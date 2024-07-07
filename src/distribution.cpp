@@ -30,10 +30,14 @@ void print2(dist_t& d) {
   // for (auto x:d.D1_attack_hits) {
   //   std::cout << x.first << ' ' << x.second << std::endl;
   // }
-  for (int i=0; i<15; ++i) {
+  for (int i=0; i<15 && i<d.D1_attack_hits.size(); ++i) {
     std::cout << d.D1_attack_hits[i].first << ' ' << d.D1_attack_hits[i].second << std::endl;
   }
   std::cout << "-----------------\n";
+}
+
+void set_verbose(dist_t& d, bool verbose) {
+  d.verbose = verbose;
 }
 
 int64_t most_frequent(dist_t& dist, int64_t G) { // cumulative frequency of top G most frequent passwords
@@ -84,7 +88,7 @@ void partition_large_d(dist_t& dist, int64_t d) {
 void count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2) {
   std::ifstream fin(dist.filename);
   if (!fin.is_open()) {
-    std::cerr << "Error: can't open file " << dist.filename << ". Nothing done." << std::endl;
+    std::cerr << "\nError: can't open file " << dist.filename << ". Nothing done." << std::endl;
     return;
   }
   std::string pwd;
@@ -121,7 +125,7 @@ void count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& 
         if (in_D2_cnt != 0) hist_D2[pwd] = in_D2_cnt;
       }
       else {
-        std::cerr << "Error: Invalid line: " << line << " in file " << dist.filename << std::endl;
+        std::cerr << "\nError: Invalid line: " << line << " in file " << dist.filename << std::endl;
       }
     }
   }
@@ -133,7 +137,7 @@ void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
   if (D1_filename.size() > 0) {
     std::ofstream fout(D1_filename);
     if (!fout.is_open()) {
-      std::cerr << "Error: Can't open file " << D1_filename << std::endl;
+      std::cerr << "\nError: Can't open file " << D1_filename << std::endl;
     }
     else {
       if (filetype == "plain") {
@@ -155,7 +159,7 @@ void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
   if (D2_filename.size() > 0) {
     std::ofstream fout(D2_filename);
     if (!fout.is_open()) {
-      std::cerr << "Error: Can't open file " << D2_filename << std::endl;
+      std::cerr << "\nError: Can't open file " << D2_filename << std::endl;
     }
     else {
       if (filetype == "plain") {
@@ -177,17 +181,17 @@ void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
 
 void partition(dist_t& dist, int64_t d, std::string D1_filename="", std::string D2_filename="", std::string filetype="plain") {
   if (d > dist.N) {
-    std::cerr << "Error: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done." << std::endl;
+    std::cerr << "\nError: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done." << std::endl;
     return;
   }
 
   if (d <= 0) {
-    std::cerr << "Error: Invalid d value " << d << ". d must be a positive number. Nothing done." << std::endl;
+    std::cerr << "\nError: Invalid d value " << d << ". d must be a positive number. Nothing done." << std::endl;
     return;
   }
 
   if (filetype != "plain" && filetype != "pwdfreq" && (D1_filename != "" || D2_filename != "")) {
-    std::cerr << "Error: Invalid filetype " << filetype << ". Must be either \"plain\" or \"pwdfreq\". Nothing done." << std::endl; 
+    std::cerr << "\nError: Invalid filetype " << filetype << ". Must be either \"plain\" or \"pwdfreq\". Nothing done." << std::endl; 
     return;
   }
 
@@ -280,7 +284,7 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename="", std::string 
 
 void partition(dist_t& dist, double fraction, std::string D1_filename, std::string D2_filename, std::string filetype) {
   if (fraction <= 0 || fraction > 1) {
-    std::cerr << "Error: Invalid fraction " << fraction << ". Nothing done." << std::endl;
+    std::cerr << "\nError: Invalid fraction " << fraction << ". Nothing done." << std::endl;
     return;
   }
   partition(dist, (int64_t) floor(fraction * dist.N), D1_filename, D2_filename, filetype="plain");
@@ -288,12 +292,12 @@ void partition(dist_t& dist, double fraction, std::string D1_filename, std::stri
 
 void model_attack(dist_t& dist, std::string attack_filename) {
   if (dist.D2_idx.size() == 0) {
-    std::cerr << "Error: Must partitoin before attacking. Nothing done." << std::endl;
+    std::cerr << "\nError: Must partitoin before attacking. Nothing done." << std::endl;
   }
 
   std::ifstream fattk(attack_filename);
   if (!fattk.is_open()) {
-    std::cerr << "Error: Can't open attack file " << attack_filename << ". Nothing done." << std::endl;
+    std::cerr << "\nError: Can't open attack file " << attack_filename << ". Nothing done." << std::endl;
     return;
   }
 

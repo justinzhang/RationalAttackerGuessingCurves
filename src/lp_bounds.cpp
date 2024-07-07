@@ -102,27 +102,16 @@ double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 		if (status == GRB_OPTIMAL) {
       return model.get(GRB_DoubleAttr_ObjVal);
 		}
-    else {
-      return -1.0;
+    else if (status == GRB_INFEASIBLE) {
+      return -2;
     }
-		// else if (status == GRB_SOLUTION_LIMIT) {
-  //     std::cerr << "The number of solutions found reached the value specified in the SolutionLimit parameter" << std::endl;
-		// }
-		// else if (status == GRB_TIME_LIMIT) {
-  //     std::cerr << "Optimization terminated because the time expended exceeded the value specified in the TimeLimit parameter." << std::endl;
-		// }
-    // else if (status == GRB_INFEASIBLE) {
-    //   std::cerr << "The model is infeasible" << std::endl;
-    // }
-		// else {
-  //     std::cerr << "Optimization was stopped with status code " << status << std::endl;
-		// }
-
+    else {
+      return -1;
+    }
   } catch(GRBException e) {
-    std::cerr << "Error code = " << e.getErrorCode() << std::endl;
-    std::cerr << e.getMessage() << std::endl;
+    std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
   } catch(...) {
-    std::cerr << "Exception during optimization" << std::endl;
+    std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
   }
 
   return 0.0;
@@ -221,27 +210,16 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 		if (status == GRB_OPTIMAL) {
       return model.get(GRB_DoubleAttr_ObjVal);
 		}
-    else {
-      return -1.0;
+    else if (status == GRB_INFEASIBLE) {
+      return -2;
     }
-		// else if (status == GRB_SOLUTION_LIMIT) {
-  //     std::cerr << "The number of solutions found reached the value specified in the SolutionLimit parameter" << std::endl;
-		// }
-		// else if (status == GRB_TIME_LIMIT) {
-  //     std::cerr << "Optimization terminated because the time expended exceeded the value specified in the TimeLimit parameter." << std::endl;
-		// }
-  //   else if (status == GRB_INFEASIBLE) {
-  //     std::cerr << "The model is infeasible" << std::endl;
-  //   }
-		// else {
-  //     std::cerr << "Optimization was stopped with status code " << status << std::endl;
-		// }
-
+    else {
+      return -1;
+    }
   } catch(GRBException e) {
-    std::cerr << "Error code = " << e.getErrorCode() << std::endl;
-    std::cerr << e.getMessage() << std::endl;
+    std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
   } catch(...) {
-    std::cerr << "Exception during optimization" << std::endl;
+    std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
   }
 
   return 1.0;
@@ -249,13 +227,25 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 
 double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
   // Note: error rate will be 2 * sum(errs)
+  if (dist.N == 0) {
+    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    return -1;
+  }
+  if (G <= 0) {
+    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    return -1;
+  }
+  if (q <= 1) {
+    std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
+    return -1;
+  }
   if (errs.size() != iprime + 1) {
-    std::cerr << "Error: errs must be of size iprime+1." << std::endl;
-    return 0.0;
+    std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
+    return -1;
   }
   if (xhats.size() != iprime + 1) {
-    std::cerr << "Error: xhats must be of size iprime+1." << std::endl;
-    return 0.0;
+    std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
+    return -1;
   }
 
   int64_t N = dist.N;
@@ -285,21 +275,33 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     }
   }
   if (!feasible) {
-    std::cerr << "Infeasible distribution!!!" << std::endl;
-    return -1.0;
+    std::cerr << "\n[Model is infeasible! Sample might not be drawn iid from the underlying distribution.]" << std::endl;
+    return -2;
   }
   return std::max(res, 0.0);
 }
 
 double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
   // Note: error rate will be 2 * sum(errs)
+  if (dist.N == 0) {
+    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    return -1;
+  }
+  if (G <= 0) {
+    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    return -1;
+  }
+  if (q <= 1) {
+    std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
+    return -1;
+  }
   if (errs.size() != iprime + 1) {
-    std::cerr << "Error: errs must be of size iprime+1." << std::endl;
-    return 0.0;
+    std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
+    return -1;
   }
   if (xhats.size() != iprime + 1) {
-    std::cerr << "Error: xhats must be of size iprime+1." << std::endl;
-    return 0.0;
+    std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
+    return -1;
   }
 
   int64_t N = dist.N;
@@ -330,13 +332,26 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     }
   }
   if (!feasible) {
-    std::cerr << "Infeasible distribution!!!" << std::endl;
-    return -1.0;
+    std::cerr << "\n[Model is infeasible! Sample might not be drawn iid from the underlying distribution.]" << std::endl;
+    return -2;
   }
   return std::min(res, 1.0);
 }
 
 double LP_LB(dist_t& dist, int64_t G, double err) {
+  if (dist.N == 0) {
+    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    return -1;
+  }
+  if (G <= 0) {
+    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    return -1;
+  }
+  if (err <= 0 || err >= 1) {
+    std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
+    return -1;
+  }
+
   double q = 1.002;
   int64_t iprime = 4;
   std::vector<double> xhats = {7.0/dist.N, 11.0/dist.N, 14.0/dist.N, 16.3/dist.N, 18.5/dist.N};
@@ -349,6 +364,19 @@ double LP_LB(dist_t& dist, int64_t G, double err) {
 }
 
 double LP_UB(dist_t& dist, int64_t G, double err) {
+  if (dist.N == 0) {
+    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    return -1;
+  }
+  if (G <= 0) {
+    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    return -1;
+  }
+  if (err <= 0 || err >= 1) {
+    std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
+    return -1;
+  }
+
   double q = 1.002;
   int64_t iprime = 4;
   std::vector<double> xhats = {7.0/dist.N, 11.0/dist.N, 14.0/dist.N, 16.3/dist.N, 18.5/dist.N};

@@ -18,15 +18,19 @@ struct dist_t {
   std::string model_attack_filename = "";
   std::vector<std::pair<int64_t, int64_t>> model_attack_hits;
 
-  int64_t N;
-  int64_t distinct;
-  int64_t distinct_D1;
+  int64_t N = 0;
+  int64_t distinct = 0;
+  int64_t distinct_D1 = 0;
+
+  bool verbose = true;
 };
 
 void print1(dist_t&);
 void print2(dist_t&);
 void print3(dist_t&);
 void print4(dist_t&);
+
+void set_verbose(dist_t&, bool);
 
 int64_t most_frequent(dist_t&, int64_t);
 
