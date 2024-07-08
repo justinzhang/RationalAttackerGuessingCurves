@@ -30,11 +30,11 @@ void parse_freqcount(dist_t& dist, std::vector<std::pair<int64_t, int64_t>>& fre
   dist.distinct = prefcount.back();
 }
 
-void read_plain(dist_t& dist, std::string filename) {
+bool read_plain(dist_t& dist, std::string filename) {
   std::ifstream fin(filename);
   if (!fin.is_open()) {
-    std::cerr << "Error: can't open file " << filename << std::endl;
-    return;
+    std::cerr << "[Error: can't open file " << filename << ".]" << std::endl;
+    return false;
   }
 
   std::unordered_map<std::string, int64_t> hist;
@@ -57,13 +57,15 @@ void read_plain(dist_t& dist, std::string filename) {
     freqcount.push_back({it.first, it.second});
   }
   parse_freqcount(dist, freqcount);
+  
+  return true;
 }
 
-void read_pwdfreq(dist_t& dist, std::string filename) { // pwd freq seperated with \t
+bool read_pwdfreq(dist_t& dist, std::string filename) { // pwd freq seperated with \t
   std::ifstream fin(filename);
   if (!fin.is_open()) {
-    std::cerr << "Error: can't open file " << filename << std::endl;
-    return;
+    std::cerr << "[Error: can't open file " << filename << ".]" << std::endl;
+    return false;
   }
 
   dist.filename = filename;
@@ -78,7 +80,7 @@ void read_pwdfreq(dist_t& dist, std::string filename) { // pwd freq seperated wi
       cnt[freq]++;
     }
     else {
-      std::cerr << "Error: Invalid line: " << line << " in file " << filename << std::endl;
+      std::cerr << "[Error: Invalid line " << line << " in file " << filename << ".]" << std::endl;
     }
   }
   fin.close();
@@ -88,13 +90,15 @@ void read_pwdfreq(dist_t& dist, std::string filename) { // pwd freq seperated wi
     freqcount.push_back({it.first, it.second});
   }
   parse_freqcount(dist, freqcount);
+
+  return true;
 }
 
-void read_freqcount(dist_t& dist, std::string filename) {
+bool read_freqcount(dist_t& dist, std::string filename) {
   std::ifstream fin(filename);
   if (!fin.is_open()) {
-    std::cerr << "Error: can't open file " << filename << std::endl;
-    return;
+    std::cerr << "[Error: can't open file " << filename << ".]" << std::endl;
+    return false;
   }
 
   dist.filename = filename;
@@ -110,41 +114,45 @@ void read_freqcount(dist_t& dist, std::string filename) {
       freqcount.push_back({freq, count});
     }
     else {
-      std::cerr << "invalid line: " << line << std::endl;
+      std::cerr << "[Error: Invalid line " << line << " in file " << filename << ".]" << std::endl;
     }
   }
   fin.close();
 
   parse_freqcount(dist, freqcount);
+
+  return true;
 }
 
-void write_freqcount(dist_t& dist, std::string filename) { // each line is (freq count)
+bool write_freqcount(dist_t& dist, std::string filename) { // each line is (freq count)
   std::ofstream fout(filename);
   if (!fout.is_open()) {
-    std::cerr << "Error: can't open file " << filename << std::endl;
+    std::cerr << "[Error: can't open file " << filename << ".]" << std::endl;
+    return false;
   }
 
   for (auto x : dist.freqcount) {
     fout << x.first << ' ' << x.second << '\n';
   }
   fout.close();
+
+  return true;
 }
 
-dist_t create(std::string filename, std::string filetype) {
-  dist_t res;
+bool read_file(dist_t& dist, std::string filename, std::string filetype) {
   if (filetype == "plain") {
-    read_plain(res, filename);
+    return read_plain(dist, filename);
   }
   else if (filetype == "pwdfreq") {
-    read_pwdfreq(res, filename);
+    return read_pwdfreq(dist, filename);
   }
   else if (filetype == "freqcount") {
-    read_freqcount(res, filename);
+    return read_freqcount(dist, filename);
   }
   else {
-    std::cerr << "Error: " << filetype << " is not a valid filetype" << std::endl;
+    std::cerr << "[Error: " << filetype << " is not a valid filetype. Choose between 'plain', 'pwdfreq', and 'freqcount'.]" << std::endl;
+    return false;
   }
-  return res;
+  return true;
 }
-
 
