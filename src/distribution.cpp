@@ -85,11 +85,13 @@ void partition_large_d(dist_t& dist, int64_t d) {
   }
 }
 
-void count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2) {
+bool count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2) {
   std::ifstream fin(dist.filename);
   if (!fin.is_open()) {
-    std::cerr << "\nError: can't open file " << dist.filename << ". Nothing done." << std::endl;
-    return;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: can't open file " << dist.filename << ". Nothing done.]" << std::endl;
+    }
+    return false;
   }
   std::string pwd;
   std::string line;
@@ -125,19 +127,26 @@ void count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& 
         if (in_D2_cnt != 0) hist_D2[pwd] = in_D2_cnt;
       }
       else {
-        std::cerr << "\nError: Invalid line: " << line << " in file " << dist.filename << std::endl;
+        if (dist.verbose) {
+          std::cerr << "\n[Error: Invalid line: " << line << " in file " << dist.filename << ".]" << std::endl;
+        }
       }
     }
   }
 
   fin.close();
+
+  return true;
 }
 
-void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2, std::string D1_filename, std::string D2_filename, std::string filetype) {
+bool write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2, std::string D1_filename, std::string D2_filename, std::string filetype) {
   if (D1_filename.size() > 0) {
     std::ofstream fout(D1_filename);
     if (!fout.is_open()) {
-      std::cerr << "\nError: Can't open file " << D1_filename << std::endl;
+      if (dist.verbose) {
+        std::cerr << "\n[Error: Can't open file " << D1_filename << ".]" << std::endl;
+      }
+      return false;
     }
     else {
       if (filetype == "plain") {
@@ -159,7 +168,10 @@ void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
   if (D2_filename.size() > 0) {
     std::ofstream fout(D2_filename);
     if (!fout.is_open()) {
-      std::cerr << "\nError: Can't open file " << D2_filename << std::endl;
+      if (dist.verbose) {
+        std::cerr << "\n[Error: Can't open file " << D1_filename << ".]" << std::endl;
+      }
+      return false;
     }
     else {
       if (filetype == "plain") {
@@ -177,22 +189,28 @@ void write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
       fout.close();
     }
   }
+
+  return true;
 }
 
-void partition(dist_t& dist, int64_t d, std::string D1_filename="", std::string D2_filename="", std::string filetype="plain") {
+bool partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_filename, std::string filetype) {
   if (d > dist.N) {
-    std::cerr << "\nError: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done." << std::endl;
-    return;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done.]" << std::endl;
+    }
+    return false;
   }
 
   if (d <= 0) {
-    std::cerr << "\nError: Invalid d value " << d << ". d must be a positive number. Nothing done." << std::endl;
-    return;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Invalid d value " << d << ". d must be a positive number. Nothing done.]" << std::endl;
+    }
+    return false;
   }
 
   if (filetype != "plain" && filetype != "pwdfreq" && (D1_filename != "" || D2_filename != "")) {
-    std::cerr << "\nError: Invalid filetype " << filetype << ". Must be either \"plain\" or \"pwdfreq\". Nothing done." << std::endl; 
-    return;
+    std::cerr << "\n[Error: Invalid filetype " << filetype << ". Must be either \"plain\" or \"pwdfreq\". Nothing done.]" << std::endl; 
+    return false;
   }
 
   if (d * 10 <= dist.N) {
@@ -205,7 +223,9 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename="", std::string 
 
   if (dist.filetype == "freqcount") {
     if (D1_filename.size() != 0 || D2_filename.size() != 0) {
-      std::cerr << "Note: Samples in format 'freqcount', can't retrieve actual passwords. Partition done but nothing written to file(s)." << std::endl;
+      if (dist.verbose) {
+        std::cerr << "[Note: Samples in format 'freqcount', can't retrieve actual passwords. Partition done but nothing written to file(s).]" << std::endl;
+      }
     }
     dist.D2_hist.clear();
 
@@ -280,14 +300,18 @@ void partition(dist_t& dist, int64_t d, std::string D1_filename="", std::string 
       }
     }
   }
+
+  return true;
 }
 
-void partition(dist_t& dist, double fraction, std::string D1_filename, std::string D2_filename, std::string filetype) {
+bool partition(dist_t& dist, double fraction, std::string D1_filename, std::string D2_filename, std::string filetype) {
   if (fraction <= 0 || fraction > 1) {
-    std::cerr << "\nError: Invalid fraction " << fraction << ". Nothing done." << std::endl;
-    return;
+    if (dist.verbose) {
+      std::cerr << "\nError: Invalid fraction " << fraction << ". Nothing done." << std::endl;
+    }
+    return false;
   }
-  partition(dist, (int64_t) floor(fraction * dist.N), D1_filename, D2_filename, filetype="plain");
+  return partition(dist, (int64_t) floor(fraction * dist.N), D1_filename, D2_filename, filetype="plain");
 }
 
 void model_attack(dist_t& dist, std::string attack_filename) {

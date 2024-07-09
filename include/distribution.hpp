@@ -37,10 +37,10 @@ int64_t most_frequent(dist_t&, int64_t);
 void partition_small_d(dist_t&, int64_t);
 void partition_large_d(dist_t&, int64_t);
 
-void count_in_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&);
-void write_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&, std::string, std::string, std::string);
+bool count_in_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&);
+bool write_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&, std::string, std::string, std::string);
 
-void partition(dist_t&, int64_t, std::string = "", std::string = "", std::string = "pwdfreq");
-void partition(dist_t&, double, std::string = "", std::string = "", std::string = "pwdfreq");
+bool partition(dist_t&, int64_t, std::string = "", std::string = "", std::string = "pwdfreq");
+bool partition(dist_t&, double, std::string = "", std::string = "", std::string = "pwdfreq");
 
 void model_attack(dist_t&, std::string);

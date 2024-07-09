@@ -109,9 +109,15 @@ double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
       return -1;
     }
   } catch(GRBException e) {
-    std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
+    }
+    return -3;
   } catch(...) {
-    std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
+    }
+    return -4;
   }
 
   return 0.0;
@@ -217,9 +223,15 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
       return -1;
     }
   } catch(GRBException e) {
-    std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
+    }
+    return -3;
   } catch(...) {
-    std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
+    }
+    return -4;
   }
 
   return 1.0;
@@ -228,23 +240,33 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
   // Note: error rate will be 2 * sum(errs)
   if (dist.N == 0) {
-    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    }
     return -1;
   }
   if (G <= 0) {
-    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    }
     return -1;
   }
   if (q <= 1) {
-    std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
+    }
     return -1;
   }
   if (errs.size() != iprime + 1) {
-    std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
+    }
     return -1;
   }
   if (xhats.size() != iprime + 1) {
-    std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
+    }
     return -1;
   }
 
@@ -275,7 +297,9 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     }
   }
   if (!feasible) {
-    std::cerr << "\n[Model is infeasible! Sample might not be drawn iid from the underlying distribution.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Model is infeasible! Sample might not be drawn iid from the underlying distribution.]" << std::endl;
+    }
     return -2;
   }
   return std::max(res, 0.0);
@@ -284,23 +308,33 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
 double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
   // Note: error rate will be 2 * sum(errs)
   if (dist.N == 0) {
-    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    }
     return -1;
   }
   if (G <= 0) {
-    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    }
     return -1;
   }
   if (q <= 1) {
-    std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
+    }
     return -1;
   }
   if (errs.size() != iprime + 1) {
-    std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
+    }
     return -1;
   }
   if (xhats.size() != iprime + 1) {
-    std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
+    }
     return -1;
   }
 
@@ -332,7 +366,9 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
     }
   }
   if (!feasible) {
-    std::cerr << "\n[Model is infeasible! Sample might not be drawn iid from the underlying distribution.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Model is infeasible! Sample might not be drawn iid from the underlying distribution.]" << std::endl;
+    }
     return -2;
   }
   return std::min(res, 1.0);
@@ -340,15 +376,21 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
 
 double LP_LB(dist_t& dist, int64_t G, double err) {
   if (dist.N == 0) {
-    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    }
     return -1;
   }
   if (G <= 0) {
-    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    }
     return -1;
   }
   if (err <= 0 || err >= 1) {
-    std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
+    }
     return -1;
   }
 
@@ -365,15 +407,21 @@ double LP_LB(dist_t& dist, int64_t G, double err) {
 
 double LP_UB(dist_t& dist, int64_t G, double err) {
   if (dist.N == 0) {
-    std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
+    }
     return -1;
   }
   if (G <= 0) {
-    std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
+    }
     return -1;
   }
   if (err <= 0 || err >= 1) {
-    std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
+    if (dist.verbose) {
+      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
+    }
     return -1;
   }
 
