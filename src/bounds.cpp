@@ -213,10 +213,7 @@ double best_prior_LB(dist_t& dist, int64_t G, double err) {
 
 // PIN paper
 
-// double new_LB_model() { // Thm 3
-// }
-
-double new_LB_samp(dist_t& dist, int64_t G, double err) { // Coro 4
+double binom_LB(dist_t& dist, int64_t G, double err) { // Coro 4
   if (dist.N == 0) {
     std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
     return -1;
@@ -268,7 +265,7 @@ double new_LB_samp(dist_t& dist, int64_t G, double err) { // Coro 4
   return mid2;
 }
 
-double new_UB(dist_t& dist, int64_t G, double err) { // Thm 2
+double binom_UB(dist_t& dist, int64_t G, double err) { // Thm 2
   if (dist.N == 0) {
     std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
     return -1;
