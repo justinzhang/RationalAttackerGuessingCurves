@@ -30,7 +30,7 @@ std::vector<std::string> main_menu_choices = {
 std::vector<std::string> sample_menu_choices = {
   "Bound guessing curve",
   "Plot guessing curve",
-  "Write to file",
+  "Write sample to file (freqcount format)",
   "Back"
 };
 
@@ -45,11 +45,12 @@ std::string trim(std::string s) {
 
 std::string prompt(std::string choices) {
   if (choices.size() == 0) {
-    std::cout << "> " << std::endl;
+    std::cout << "> ";
   }
   else {
     std::cout << choices << ": ";
   }
+  std::cout << std::flush;
   std::string res;
   getline(std::cin, res);
   return trim(res);
@@ -157,20 +158,23 @@ int main() {
   std::string choice;
   while (true) {
     choice = main_menu();
-    if (choice == "1") {
-      if (create_sample() == -1) {
-        std::cout << "Error: can't read from the file." << std::endl;
-      }
-      else {
-        sample_menu();
-      }
-    }
-    else if (choice == "2") {
-      choose_sample();
-      sample_menu();
+    if (choice == "3") {
+      confirm_exit();
     }
     else {
-      confirm_exit();
+      if (choice == "1" && create_sample() == -1) {
+        std::cout << "Error: can't read from the file." << std::endl;
+        continue;
+      }
+      else {
+        choose_sample();
+      }
+      while (true) {
+        choice = sample_menu();
+        if (choice == "4") {
+          break;
+        }
+      }
     }
   }
 }

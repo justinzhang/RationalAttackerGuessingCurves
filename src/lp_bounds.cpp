@@ -8,6 +8,7 @@
 #include "gurobi_c++.h"
 
 #include "helpers.hpp"
+#include "error_check.hpp"
 
 double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats) {
 
@@ -239,34 +240,7 @@ double LP_upper(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, in
 
 double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
   // Note: error rate will be 2 * sum(errs)
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (q <= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (errs.size() != iprime + 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (xhats.size() != iprime + 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
-    }
+  if (!error_check_LP(dist, G, q, iprime, errs, xhats)) {
     return -1;
   }
 
@@ -307,34 +281,7 @@ double LP_LB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
 
 double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<double> errs, std::vector<double> xhats) {
   // Note: error rate will be 2 * sum(errs)
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (q <= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: q must be greater than 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (errs.size() != iprime + 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: errs must be of size iprime+1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (xhats.size() != iprime + 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: xhats must be of size iprime+1.]" << std::endl;
-    }
+  if (!error_check_LP(dist, G, q, iprime, errs, xhats)) {
     return -1;
   }
 
@@ -375,22 +322,7 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
 }
 
 double LP_LB(dist_t& dist, int64_t G, double err) {
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
+  if (!error_check_basic(dist, G, err)) {
     return -1;
   }
 
@@ -406,22 +338,7 @@ double LP_LB(dist_t& dist, int64_t G, double err) {
 }
 
 double LP_UB(dist_t& dist, int64_t G, double err) {
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
+  if (!error_check_basic(dist, G, err)) {
     return -1;
   }
 

@@ -4,56 +4,22 @@
 #include <cmath>
 
 #include "helpers.hpp"
+#include "error_check.hpp"
 
 // LP paper
 
 double freq_UB(dist_t& dist, int64_t G, double err) { // Coro 4
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
+  if (!error_check_basic(dist, G, err)) {
     return -1;
   }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
+
   int64_t top_G_freq = most_frequent(dist, G);
   double eps = sqrt(-log(err) / (2.0 * dist.N));
   return std::min(((double) top_G_freq) / ((double) dist.N) + eps, 1.0);
 }
 
 double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (dist.D2_idx.empty()) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: Must partition before calculating sampling LB.]" << std::endl;
-    }
+  if (!error_check_with_partition(dist, G, err)) {
     return -1;
   }
   
@@ -78,34 +44,7 @@ double samp_LB(dist_t& dist, int64_t G, double err) { // Thm 5
 }
 
 double extended_LB(dist_t& dist, int64_t G, double err) { // Coro 7
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (dist.D2_idx.empty()) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: Must partition before calculating sampling LB.]" << std::endl;
-    }
-    return -1;
-  }
-  if (dist.model_attack_filename.size() == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: Must specify attack from model before calculating extended LB.]" << std::endl;
-    }
+  if (!error_check_with_attack(dist, G, err)) {
     return -1;
   }
 
@@ -132,40 +71,7 @@ double extended_LB(dist_t& dist, int64_t G, double err) { // Coro 7
 }
 
 double prior_LB(dist_t& dist, int64_t G, int64_t j, double err1, double err2) { // Thm 9
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err1 <= 0 || err1 >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err1 must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err2 <= 0 || err2 >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err2 must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= dist.N) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: No L value satisfy the constraints on the parameters.]" << std::endl;
-    }
-    return -1;
-  }
-  if (j < 2) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: Invalid j value. j must be greater than or equal to 2.]" << std::endl;
-    }
+  if (!error_check_prior_LB(dist, G, j, err1, err2)) {
     return -1;
   }
 
@@ -194,38 +100,14 @@ double prior_LB(dist_t& dist, int64_t G, int64_t j, double err1, double err2) { 
 }
 
 double prior_LB(dist_t& dist, int64_t G, int64_t j, double err) { // Thm 9
+  if (!error_check_prior_LB(dist, G, j, err, err)) {
+    return -1;
+  }
   return prior_LB(dist, G, j, err/2, err/2);
 }
 
 double best_prior_LB(dist_t& dist, int64_t G, double err1, double err2) { // Thm 9
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err1 <= 0 || err1 >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err1 must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err2 <= 0 || err2 >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err2 must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= dist.N) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: No L value satisfy the constraints on the parameters.]" << std::endl;
-    }
+  if (!error_check_prior_LB(dist, G, 2, err1, err2)) {
     return -1;
   }
 
@@ -237,59 +119,16 @@ double best_prior_LB(dist_t& dist, int64_t G, double err1, double err2) { // Thm
 }
 
 double best_prior_LB(dist_t& dist, int64_t G, double err) {
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= dist.N) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: No L value satisfy the constraints on the parameters.]" << std::endl;
-    }
+  if (!error_check_prior_LB(dist, G, 2, err, err)) {
     return -1;
   }
   return best_prior_LB(dist, G, err/2, err/2);
 }
 
-
 // PIN paper
 
 double binom_LB(dist_t& dist, int64_t G, double err) { // Coro 4
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
-    return -1;
-  }
-  if (dist.D2_idx.empty()) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: Must partition before calculating sampling LB.]" << std::endl;
-    }
+  if (!error_check_with_partition(dist, G, err)) {
     return -1;
   }
 
@@ -328,22 +167,7 @@ double binom_LB(dist_t& dist, int64_t G, double err) { // Coro 4
 }
 
 double binom_UB(dist_t& dist, int64_t G, double err) { // Thm 2
-  if (dist.N == 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: dist_t object is empty.]" << std::endl;
-    }
-    return -1;
-  }
-  if (G <= 0) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: G must be a positive interger.]" << std::endl;
-    }
-    return -1;
-  }
-  if (err <= 0 || err >= 1) {
-    if (dist.verbose) {
-      std::cerr << "\n[Error: err must be between 0 and 1.]" << std::endl;
-    }
+  if (!error_check_basic(dist, G, err)) {
     return -1;
   }
 
