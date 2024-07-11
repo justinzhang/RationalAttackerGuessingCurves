@@ -18,7 +18,7 @@ The program can process password samples in 3 different file formats:
 - **password-frequency**: Each line is a password and an integer separated by a `\t` character, representing a **unique** password and the number of times it occurs in the sample (i.e. its frequency). To ensure correctness, make sure that no two lines contain the same passwords.
 - **frequency-count**: Each line is two integers $x$ and $y$ separated by whitespace, indicating that there are $y$ unique passwords that all occur $x$ times in the sample.
 
-> Note: A `"freqcount"` sample does not contain information about the actual passwords. Therefore, the `extended_LB` bound described in [the paper](papers/) is not available for such samples.
+> Note: A `"freqcount"` sample does not contain information about the actual passwords. Therefore, bounds that incorporate password cracking models cannot be applied to such datasets. Specifically, the `extended_LB` bound described in [the paper](papers/) is not available for such samples.
 
 For example, consider a password sample containing 4 passwords: `{ "123456", "abcdef", "Password123", "abcdef" }`. In **plain text** format, it would be
 
