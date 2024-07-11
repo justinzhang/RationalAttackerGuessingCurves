@@ -70,11 +70,11 @@ bool error_check_with_attack(dist_t& dist, int64_t G, double err) {
   }
   if (dist.D2_idx.empty()) {
     if (dist.verbose) {
-      std::cerr << "\n[Error: Must partition before calculating extended LB.]" << std::endl;
+      std::cerr << "\n[Error: Must partition and attack before calculating extended LB.]" << std::endl;
     }
     return false;
   }
-  if (dist.model_attack_filename.size() == 0) {
+  if (dist.model_attack_filename.empty()) {
     if (dist.verbose) {
       std::cerr << "\n[Error: Must specify attack from model before calculating extended LB.]" << std::endl;
     }

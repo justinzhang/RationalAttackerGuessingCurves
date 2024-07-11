@@ -58,16 +58,23 @@ Our program provides two interfaces. For those who want a quick summary without 
 
 ### Working with Password Samples
 
-The program utilizes the data structure `dist_t` to represent password samples from and store precomputed information about the samples. 
+The program utilizes the data structure `dist_t` to represent password samples and store precomputed information about the samples. 
 
 #### Creating a `dist_t` object
 
-- verbose
-- write_freqcount
+- Use the `read_file(dist, filename, filetype)` function to associate a password sample stored in `filename` with the object `dist`. `filetype` should be either `"plain"`, `"pwdfreq"`, or `"freqcount"` depending on the format of the password sample file. The function returns `true` if the sample was successfully read and `false` if the file does not exist or couldn't be read.
+- Use the `set_verbose(dist, true/false)` function to turn on/off error messages. Error messages are output to `stderr`, one can also redirect them to another file.
+- Use the `write_freqcount(dist, filename)` function to write the password sample `dist` in the "freqcount" format to the file `filename`. This is useful since reading a "freqcount" file is much more efficient than reading a file with actual passwords. The function returns `true` is the data was successfully written to the file and `false` otherwise.
 
 #### Partition a sample
  
-- pratition(fraction/d)
+- Use the `partition(dist, d)` function to randomly partition the sample set $S$ into $D_{1}$ and $D_{2}$ where $D_{2}$ is of size `d` and $D_{1}$ contains the remaining samples. The function returns `true` if the partition was succcessful and `false` otherwise.
+- Use the `partition(dist, fraction)` function to randomly partition the sample set $S$ into $D_{1}$ and $D_{2}$ where $D_{2}$ is of size `d = N * fraction` (`N` is size of sample) and $D_{1}$ contains the remaining samples. The function returns `true` if the partition was succcessful and `false` otherwise.
+
+It is recommended that the user keep the size of $D_{2}$ relatively small compared to the total number of samples (the [paper](lp_paper) uses $d = 25000$ with sample sets of size around $10^{8}$) to get the best bounds. Partitioning is required for bounds `samp_LB`, `extended_LB`, and `binom_LB`.
+
+To retrieve the actual passwords in each partitioned set, use the function `partition(dist, d/fraction, D1_filename, D2_filename, filetype)` (note that this only applies to samples specified with "plain" or "pwdfreq" as "freqcount" samples don't contain actual passwords).
+
 
 #### Attacking a sample
 
