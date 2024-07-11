@@ -6,6 +6,7 @@ project(PasswordGuessingCurves)
 
 # global settings
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
 # gurobi c++ package
 if(APPLE)
@@ -17,8 +18,6 @@ else()
 endif()
 set(GUROBI_PATH ${GUROBI_PATH_DEFAULT} CACHE PATH "path to gurobi installation")
 set(GUROBI_CPPLIB -L${GUROBI_PATH}/lib -lgurobi_c++ -lgurobi110 -lm)
-
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
 # test executable
 add_executable(test test.cpp ${SRC_FILES})
