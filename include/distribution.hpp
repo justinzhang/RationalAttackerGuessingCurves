@@ -38,9 +38,11 @@ void partition_small_d(dist_t&, int64_t);
 void partition_large_d(dist_t&, int64_t);
 
 bool count_in_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&);
-bool write_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&, std::string, std::string, std::string);
+bool write_partition(dist_t&, std::unordered_map<std::string, int64_t>&, std::unordered_map<std::string, int64_t>&, std::string, std::string);
 
-bool partition(dist_t&, int64_t, std::string = "", std::string = "", std::string = "pwdfreq");
-bool partition(dist_t&, double, std::string = "", std::string = "", std::string = "pwdfreq");
+bool partition(dist_t&, int64_t, std::string = "", std::string = "");
+bool partition(dist_t&, double, std::string = "", std::string = "");
+
+bool pre_partition(dist_t&, int64_t);
 
 void model_attack(dist_t&, std::string);

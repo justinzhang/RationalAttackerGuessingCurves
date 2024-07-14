@@ -139,7 +139,7 @@ bool count_in_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& 
   return true;
 }
 
-bool write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2, std::string D1_filename, std::string D2_filename, std::string filetype) {
+bool write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& hist_D1, std::unordered_map<std::string, int64_t>& hist_D2, std::string D1_filename, std::string D2_filename) {
   if (D1_filename.size() > 0) {
     std::ofstream fout(D1_filename);
     if (!fout.is_open()) {
@@ -149,17 +149,8 @@ bool write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
       return false;
     }
     else {
-      if (filetype == "plain") {
-        for (auto& x:hist_D1) {
-          for (int i=0; i<x.second; ++i) {
-            fout << x.first << '\n';
-          }
-        }
-      }
-      else {
-        for (auto& x:hist_D1) {
-          fout << x.first << '\t' << x.second << '\n';
-        }
+      for (auto& x:hist_D1) {
+        fout << x.first << '\t' << x.second << '\n';
       }
       fout.close();
     }
@@ -174,17 +165,8 @@ bool write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
       return false;
     }
     else {
-      if (filetype == "plain") {
-        for (auto& x:hist_D2) {
-          for (int i=0; i<x.second; ++i) {
-            fout << x.first << '\n';
-          }
-        }
-      }
-      else {
-        for (auto& x:hist_D2) {
-          fout << x.first << '\t' << x.second << '\n';
-        }
+      for (auto& x:hist_D2) {
+        fout << x.first << '\t' << x.second << '\n';
       }
       fout.close();
     }
@@ -193,7 +175,7 @@ bool write_partition(dist_t& dist, std::unordered_map<std::string, int64_t>& his
   return true;
 }
 
-bool partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_filename, std::string filetype) {
+bool partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_filename) {
   if (d > dist.N) {
     if (dist.verbose) {
       std::cerr << "\n[Error: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done.]" << std::endl;
@@ -205,11 +187,6 @@ bool partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
     if (dist.verbose) {
       std::cerr << "\n[Error: Invalid d value " << d << ". d must be a positive number. Nothing done.]" << std::endl;
     }
-    return false;
-  }
-
-  if (filetype != "plain" && filetype != "pwdfreq" && (D1_filename != "" || D2_filename != "")) {
-    std::cerr << "\n[Error: Invalid filetype " << filetype << ". Must be either \"plain\" or \"pwdfreq\". Nothing done.]" << std::endl; 
     return false;
   }
 
@@ -279,7 +256,7 @@ bool partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
     std::unordered_map<std::string, int64_t> D2_hist;
     count_in_partition(dist, D1_hist, D2_hist);
     dist.D2_hist = D2_hist;
-    write_partition(dist, D1_hist, D2_hist, D1_filename, D2_filename, filetype);
+    write_partition(dist, D1_hist, D2_hist, D1_filename, D2_filename);
 
     // precompute dictionary attack with D1
     std::vector<std::pair<std::string, int64_t>> D1_pwdfreq;
@@ -304,14 +281,68 @@ bool partition(dist_t& dist, int64_t d, std::string D1_filename, std::string D2_
   return true;
 }
 
-bool partition(dist_t& dist, double fraction, std::string D1_filename, std::string D2_filename, std::string filetype) {
+bool partition(dist_t& dist, double fraction, std::string D1_filename, std::string D2_filename) {
   if (fraction <= 0 || fraction > 1) {
     if (dist.verbose) {
       std::cerr << "\nError: Invalid fraction " << fraction << ". Nothing done." << std::endl;
     }
     return false;
   }
-  return partition(dist, (int64_t) floor(fraction * dist.N), D1_filename, D2_filename, filetype="plain");
+  return partition(dist, (int64_t) floor(fraction * dist.N), D1_filename, D2_filename);
+}
+
+bool pre_partition(dist_t& dist, int64_t d) {
+  if (d > dist.N) {
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Invalid d value " << d << " is greater than number of samples " << dist.N << ". Nothing done.]" << std::endl;
+    }
+    return false;
+  }
+
+  if (d <= 0) {
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Invalid d value " << d << ". d must be a positive number. Nothing done.]" << std::endl;
+    }
+    return false;
+  }
+
+  if (dist.filetype == "freqcount") {
+    if (dist.verbose) {
+      std::cerr << "\n[Error: Sample must be in format \"plain\" or \"pwdfreq\" to qualify for pre-partitioning. Nothing done.]" << std::endl;
+    }
+    return false;
+  }
+
+  dist.D2_idx.resize(d);
+  for (int i=1; i<=d; ++i) {
+    dist.D2_idx[i] = i;
+  }
+
+  std::unordered_map<std::string, int64_t> D1_hist;
+  std::unordered_map<std::string, int64_t> D2_hist;
+  count_in_partition(dist, D1_hist, D2_hist);
+  dist.D2_hist = D2_hist;
+
+  // precompute dictionary attack with D1
+  std::vector<std::pair<std::string, int64_t>> D1_pwdfreq;
+  for (auto x:D1_hist) {
+    D1_pwdfreq.push_back(x);
+  }
+  sort(D1_pwdfreq.begin(), D1_pwdfreq.end(), [&](std::pair<std::string, int64_t>& a, std::pair<std::string, int64_t>& b) {
+    return a.second > b.second;
+  });
+
+  int64_t cur_hits = 0;
+  dist.D1_attack_hits.clear();
+  dist.distinct_D1 = D1_pwdfreq.size();
+  for (int i=0; i<D1_pwdfreq.size() && cur_hits<d; ++i) {
+    if (D2_hist[D1_pwdfreq[i].first] != 0) {
+      cur_hits += D2_hist[D1_pwdfreq[i].first];
+      dist.D1_attack_hits.push_back(std::make_pair(i+1, cur_hits));
+    }
+  }
+
+  return true;
 }
 
 void model_attack(dist_t& dist, std::string attack_filename) {
