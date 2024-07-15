@@ -67,18 +67,20 @@ The program utilizes the data structure `dist_t` to represent password samples a
 
 ### Partition a sample
 
-The program provides two
+The program provides two ways of partitioning a sample into two sets, which is necessary for calculating tight lower bounds. The first way is partitioning inside the program, and the second way is partitioning before the running program. For samples in the format "freqcount", only the first method is viable; for samples in formates "plain" or "pwdfreq", both methods are viable but the second method is recommended.
+
+It is recommended that the user keep the size of $D_{2}$ relatively small compared to the total number of samples (the [paper](lp_paper) uses $d = 25000$ with sample sets of size around $10^{8}$) to get the best bounds. Partitioning is required for bounds `samp_LB`, `extended_LB`, and `binom_LB`.
 
 #### Partitioning within the program
  
 - Use the `partition(dist, d)` function to randomly partition the sample set $S$ into $D_{1}$ and $D_{2}$ where $D_{2}$ is of size `d` and $D_{1}$ contains the remaining samples. The function returns `true` if the partition was succcessful and `false` otherwise.
 - Use the `partition(dist, fraction)` function to randomly partition the sample set $S$ into $D_{1}$ and $D_{2}$ where $D_{2}$ is of size `d = N * fraction` (`N` is size of sample) and $D_{1}$ contains the remaining samples. The function returns `true` if the partition was succcessful and `false` otherwise.
 
-It is recommended that the user keep the size of $D_{2}$ relatively small compared to the total number of samples (the [paper](lp_paper) uses $d = 25000$ with sample sets of size around $10^{8}$) to get the best bounds. Partitioning is required for bounds `samp_LB`, `extended_LB`, and `binom_LB`.
-
-To retrieve the actual passwords in each partitioned set, use the function `partition(dist, d/fraction, D1_filename, D2_filename)` to write the passwords in each dataset into the files `D1_filename` and `D2_filename`. (note that this only applies to samples specified with "plain" or "pwdfreq" as "freqcount" samples don't contain actual passwords).
+> If the user decides to use this method for samples in the format "pwdfreq" or "plain", one can retrieve the actual passwords in each partitioned set, use the function `partition(dist, d/fraction, D1_filename, D2_filename)` to write the passwords in each dataset into the files `D1_filename` and `D2_filename`. However, it is recommended that the user use the second method listed below for samples in the two formats since the user might need to use the passwords in $D_{1}$ to train a password cracking model for `extended_LB` beforehand.
 
 #### Partitioning before running the program
+
+Use the `pre_partition(dist, d)` function to specify that the password sample file has been pre-partitioned into sets $D_{1}$ and $D_{2}$ where $D_{2}$ is of size `d` and $D_{1}$ contains the remaining samples. A pre-partitioned
 
 ### Attacking a sample
 

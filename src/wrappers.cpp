@@ -17,7 +17,7 @@ double best_LB(dist_t& dist, int64_t G, double err) {
 
   double lb = binom_LB(dist, G, err);
   double ub = binom_UB(dist, G, err);
-  double threshold = 0.04;
+  double threshold = 0.05;
 
   if (ub - lb > threshold) {
     double lp_lb = LP_LB(dist, G, err);
@@ -60,12 +60,12 @@ double best_UB(dist_t& dist, int64_t G, double err) {
 
   double lb = binom_LB(dist, G, err);
   double ub = binom_UB(dist, G, err);
-  double threshold = 0.04;
+  double threshold = 0.05;
 
   if (ub - lb > threshold) {
     double lp_ub = LP_UB(dist, G, err);
     if (lp_ub > 0) {
-      lb = std::min(ub, lp_ub);
+      ub = std::min(ub, lp_ub);
     }
     else if (lp_ub == -2 && dist.verbose) {
       std::cerr << "\n[Warning: LP is infeasible, sample might not be iid.]" << std::endl;

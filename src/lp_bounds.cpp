@@ -322,14 +322,21 @@ double LP_UB(dist_t& dist, int64_t G, double q, int64_t iprime, std::vector<doub
 }
 
 double LP_LB(dist_t& dist, int64_t G, double err) {
+  return LP_LB_normal(dist, G, err);
+}
+
+double LP_UB(dist_t& dist, int64_t G, double err) {
+  return LP_UB_normal(dist, G, err);
+}
+
+double LP_LB_fast(dist_t& dist, int64_t G, double err) {
   if (!error_check_basic(dist, G, err)) {
     return -1;
   }
-
-  double q = 1.002;
-  int64_t iprime = 4;
-  std::vector<double> xhats = {7.0/dist.N, 11.0/dist.N, 14.0/dist.N, 16.3/dist.N, 18.5/dist.N};
-  std::vector<double> errs = {0.00009, 0.000165, 0.00175, 0.00175, 0.0012};
+  double q = 1.008;
+  int64_t iprime = 6;
+  std::vector<double> xhats = {3.0/dist.N, 4.0/dist.N, 5.0/dist.N, 6.0/dist.N, 7.0/dist.N, 8.0/dist.N, 9.0/dist.N};
+  std::vector<double> errs = {1, 1.5, 1.75, 1.875, 1.9375, 1.96875, 1.984375};
   double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
   for (auto& x:errs) {
     x *= (err / (2.0 * sum));
@@ -337,15 +344,78 @@ double LP_LB(dist_t& dist, int64_t G, double err) {
   return LP_LB(dist, G, q, iprime, errs, xhats);
 }
 
-double LP_UB(dist_t& dist, int64_t G, double err) {
+double LP_UB_fast(dist_t& dist, int64_t G, double err) {
+  if (!error_check_basic(dist, G, err)) {
+    return -1;
+  }
+  double q = 1.008;
+  int64_t iprime = 6;
+  std::vector<double> xhats = {3.0/dist.N, 4.0/dist.N, 5.0/dist.N, 6.0/dist.N, 7.0/dist.N, 8.0/dist.N, 9.0/dist.N};
+  std::vector<double> errs = {1, 1.5, 1.75, 1.875, 1.9375, 1.96875, 1.984375};
+  double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
+  for (auto& x:errs) {
+    x *= (err / (2.0 * sum));
+  }
+  return LP_UB(dist, G, q, iprime, errs, xhats);
+}
+
+double LP_LB_normal(dist_t& dist, int64_t G, double err) {
+  if (!error_check_basic(dist, G, err)) {
+    return -1;
+  }
+
+  double q = 1.004;
+  int64_t iprime = 6;
+  std::vector<double> xhats = {3.0/dist.N, 4.0/dist.N, 5.0/dist.N, 6.0/dist.N, 7.0/dist.N, 8.0/dist.N, 9.0/dist.N};
+  std::vector<double> errs = {1, 1.5, 1.75, 1.875, 1.9375, 1.96875, 1.984375};
+  double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
+  for (auto& x:errs) {
+    x *= (err / (2.0 * sum));
+  }
+  return LP_LB(dist, G, q, iprime, errs, xhats);
+}
+
+double LP_UB_normal(dist_t& dist, int64_t G, double err) {
+  if (!error_check_basic(dist, G, err)) {
+    return -1;
+  }
+
+  double q = 1.004;
+  int64_t iprime = 6;
+  std::vector<double> xhats = {3.0/dist.N, 4.0/dist.N, 5.0/dist.N, 6.0/dist.N, 7.0/dist.N, 8.0/dist.N, 9.0/dist.N};
+  std::vector<double> errs = {1, 1.5, 1.75, 1.875, 1.9375, 1.96875, 1.984375};
+  double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
+  for (auto& x:errs) {
+    x *= (err / (2.0 * sum));
+  }
+  return LP_UB(dist, G, q, iprime, errs, xhats);
+}
+
+double LP_LB_slow(dist_t& dist, int64_t G, double err) {
   if (!error_check_basic(dist, G, err)) {
     return -1;
   }
 
   double q = 1.002;
-  int64_t iprime = 4;
-  std::vector<double> xhats = {7.0/dist.N, 11.0/dist.N, 14.0/dist.N, 16.3/dist.N, 18.5/dist.N};
-  std::vector<double> errs = {0.00009, 0.000165, 0.00175, 0.00175, 0.0012};
+  int64_t iprime = 6;
+  std::vector<double> xhats = {3.0/dist.N, 4.0/dist.N, 5.0/dist.N, 6.0/dist.N, 7.0/dist.N, 8.0/dist.N, 9.0/dist.N};
+  std::vector<double> errs = {1, 1.5, 1.75, 1.875, 1.9375, 1.96875, 1.984375};
+  double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
+  for (auto& x:errs) {
+    x *= (err / (2.0 * sum));
+  }
+  return LP_UB(dist, G, q, iprime, errs, xhats);
+}
+
+double LP_UB_slow(dist_t& dist, int64_t G, double err) {
+  if (!error_check_basic(dist, G, err)) {
+    return -1;
+  }
+
+  double q = 1.002;
+  int64_t iprime = 6;
+  std::vector<double> xhats = {3.0/dist.N, 4.0/dist.N, 5.0/dist.N, 6.0/dist.N, 7.0/dist.N, 8.0/dist.N, 9.0/dist.N};
+  std::vector<double> errs = {1, 1.5, 1.75, 1.875, 1.9375, 1.96875, 1.984375};
   double sum = std::accumulate(errs.begin(), errs.end(), 0.0);
   for (auto& x:errs) {
     x *= (err / (2.0 * sum));
