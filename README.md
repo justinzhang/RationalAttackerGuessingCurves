@@ -65,7 +65,7 @@ The program utilizes the data structure `dist_t` to represent password samples a
 - Use the `set_verbose(dist, true/false)` function to turn on/off error messages. Error messages are output to `stderr`, one can also redirect them to another file.
 - Use the `write_freqcount(dist, filename)` function to write the password sample `dist` in the "freqcount" format to the file `filename`. This is useful since reading a "freqcount" file is much more efficient than reading a file with actual passwords. The function returns `true` is the data was successfully written to the file and `false` otherwise.
 
-### Partition a sample
+### Partitioning a sample
 
 The program provides two ways of partitioning a sample into two sets, which is necessary for calculating tight lower bounds. The first way is partitioning inside the program, and the second way is partitioning before the running program. For samples in the format "freqcount", only the first method is viable; for samples in formates "plain" or "pwdfreq", both methods are viable but the second method is recommended.
 
@@ -84,18 +84,71 @@ Use the `pre_partition(dist, d)` function to specify that the password sample fi
 
 ### Attacking a sample
 
-- attack()
+After partitioning the sample, one can train a passowrd guessing model using the set $D_{1}$ to generate guesses for `extended_LB` as the guesses number $G$ exceeds the number of distinct passwords in $D_{1}$. Use `model_attack(dist, file)` to attack the password sample where `file` contains a password (the model's guess) on each line. When generating the additional attack attempts with a password model, the user can choose to omit the password guesses from the model that are present in $D_{1}$ since they would already be guessed during the dictionary attack in `samp_LB`.
 
 ### Calculating Bounds
 
-- all overloads and wrappers
+All upper/lower bounds available have a basic version `bound_name(dist, G, err)` where `dist` is the `dist_t` object, `G` is the guessing budget, and `err` is the desired error rate, which automatically selects parameters if necessary. The bounds with extra parameters have overloads where the user can manually set them. The output lower bounds $L$ (resp. upper bounds $U$) hold with probability at least `err`.
+
+- `freq_UB(dist, G, err)`: no adjustable parameters.
+- `samp_LB`: requires partition. Size of partition `d` is an adjustable parameter.
+- `extended_LB`: requires partition and a model attack. Size of partition `d` and the password model used are adjustable parameters.
+- `LP_LB`: The mesh granularity `q`, number of linear constraints in the LP `iprime`, error rates `errs`, and slack terms `xhats` are adjustable parameters. Use `LP_LB(dist, G, q, iprime, errs, xhats)` to set parameters. `q` should be a `double` greater than 1, `iprime` should be an integer, `errs` should be a `vector<double>` of size `iprime + 1` that specifies the error rate of each linear constraint in the LP, and `xhats` should be a `vector<double>` of size `iprime + 1`. The final error rate of the lower bound would be two times the sum of the elements of `errs`. For details about the parameters, please see [the paper](./papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf)
+- `LP_UB`: The mesh granularity `q`, number of linear constraints in the LP `iprime`, error rates `errs`, and slack terms `xhats` are adjustable parameters. Use `LP_UB(dist, G, q, iprime, errs, xhats)` to set parameters. `q` should be a `double` greater than 1, `iprime` should be an integer, `errs` should be a `vector<double>` of size `iprime + 1` that specifies the error rate of each linear constraint in the LP, and `xhats` should be a `vector<double>` of size `iprime + 1`. The final error rate of the upper bound would be two times the sum of the elements of `errs`. For details about the parameters, please see [the paper](./papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf)
+- `binom_LB`: requires partition. Size of partition `d` is an adjustable parameter.
+- `binom_UB(dist, G, err)`: no adjustable parameters.
+
+In addition, use the functions `best_LB(dist, G, err)` and `best_UB(dist, G, err)` to get the tightest bound for a specific $G$ value. The functions uses heuristics to avoid performing time consuming linear programs for certain $G$ values where other bounds are certainly better.
 
 ### Plotting the Guessing Curves
 
+Use the function `tikz_plot(data, style, legend, file)` to generate latex code for plotting the entire guessing curve ($\lambda_{G}$ vs. $G$). `data` is of type `vector<vector<pair<int64_t, string>>>`, `style` and `legend` is of type `vector<string>`, the three vectors should be of the same length. Each `vector<pair<int64_t, double>>` is a list of $(\lambda_{G}, G)$ pairs for a certain bound, and the corresponding elements in `style` and `legend` specifies the style and name of the bound. See [examples](examples/) for better guidance.
+
+> Make sure to include `\usepackage{tikz}` and `\usepackage{pfgplot}` in the latex file.
 
 ## Usage
 
 ### Building the Program
+
+#### Building the Interactive Console
+
+First, create a build directory and switch to the directory.
+
+    mkdir build && cd build
+
+Then, run cmake to generate the build files.
+
+    cmake ../
+
+The file `CmakeLists.txt` contains default install paths for the gurobi c++ library for different operating systems. One can follow the steps of installing the library and obtaining a free academic license [here](https://support.gurobi.com/hc/en-us/articles/14799677517585-Getting-Started-with-Gurobi-Optimizer). If the user did not install the library in the default path, use the `-D` flag to specify where the library is installed on the local machine.
+
+    cmake -DGUROBI_PATH=<user's gurobi path> ../
+
+Then, build the program and switch back to the root directory of the project.
+
+    make interactive && cd ../
+
+Finally, execute the binary to access the interactive console
+
+    ./interactive
+
+#### Building with User's Code
+
+The user can write their own program to access the functions listed in [advanced tools](advanced-tools) (see [examples](examples/examples.cpp) for guidance). Follow the instructions in [CmakeLists.txt](CmakeLists.txt) to add an executable and a source file. Then, use the same commands to build the program.
+
+    mkdir build && cd build
+    cmake ../ (or cmake -DGUROBI_PATH=<user's gurobi path> ../)
+    make <user's executable name> && cd ../
+    ./<user's executable name>
+
+Make sure to include the necessary files with these include statements.
+
+    #include "distribution.hpp"
+    #include "pwdio.hpp"
+    #include "bounds.hpp"
+    #include "lp_bounds.hpp"
+    #include "wrappers.hpp"
+    #include "plotting.hpp"
 
 ### Other Notes
 - Please keep the password file associated with a `dist_t` object available and unchanged as long as the object is still in use. The program might read from the file to calculate bounds.
