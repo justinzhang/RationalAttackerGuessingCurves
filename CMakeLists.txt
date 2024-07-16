@@ -25,6 +25,12 @@ target_include_directories(test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(test PUBLIC ${GUROBI_PATH}/include)
 target_link_libraries(test ${GUROBI_CPPLIB})
 
+# example executable
+add_executable(example examples/example.cpp ${SRC_FILES})
+target_include_directories(example PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(example PUBLIC ${GUROBI_PATH}/include)
+target_link_libraries(example ${GUROBI_CPPLIB})
+
 # interactive executable
 add_executable(interactive interactive.cpp ${SRC_FILES})
 target_include_directories(interactive PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
