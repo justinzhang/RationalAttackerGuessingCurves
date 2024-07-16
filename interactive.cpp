@@ -12,9 +12,11 @@
 #include "bounds.hpp"
 #include "lp_bounds.hpp"
 #include "plotting.hpp"
+#include "wrappers.hpp"
 
 std::string trim(std::string);
 std::string prompt(std::string);
+bool is_number(std::string);
 int create_sample();
 int choose_sample();
 void confirm_exit();
@@ -38,9 +40,7 @@ std::vector<std::string> sample_menu_choices = {
 std::vector<std::string> plot_bound_choices = {
   "Best bound",
   "All bounds"
-}
-
-std::vector<std::string> bounds
+};
 
 std::vector<dist_t> samples;
 int cur_id = -1;
@@ -65,6 +65,12 @@ std::string prompt(std::string choices) {
   std::string res;
   getline(std::cin, res);
   return trim(res);
+}
+
+bool is_number(std::string s) {
+  return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) {
+    return !std::isdigit(c);
+  }) == s.end();
 }
 
 void horizontal() {
@@ -97,6 +103,8 @@ int create_sample() {
 
   dist_t new_samp;
   set_verbose(new_samp, false);
+  partition(new_samp, 0.001);
+
   if (read_file(new_samp, filename, filetype)) {
     samples.push_back(new_samp);
     cur_id = (int) samples.size() - 1;
@@ -212,10 +220,28 @@ int main() {
         }
         else {
           if (choice == "1") {
+            std::cout << "Enter guessing number" << std::endl;
+            std::string guessing_number = "";
+            // while (!is_number(guessing_number)) {
+            while (guessing_number.size() == 0) {
+              guessing_number = prompt("");
+            }
+            int64_t G = std::stoi(guessing_number);
+
+            std::cout << "Enter desired error rate" << std::endl;
+            std::string error_rate = "";
+            while (error_rate.size() == 0) {
+              error_rate = prompt("");
+            }
+            double err = stod(error_rate);
+
+            std::cout << "Calculating bounds..." << std::endl;
+            std::cout << "We are " << 100.0 * (1-err) << "\% sure that the guessing curve is within: ";
+            std::cout << "(" << best_LB(samples[cur_id], G, err/2) << ", " << best_UB(samples[cur_id], G, err/2) << ")" << std::endl;
           }
           else if (choice == "2") {
             std::string filename = "";
-            std::cout << "Enter filename to write to." << std::endl;
+            std::cout << "Enter filename to write to" << std::endl;
             while (filename.size() == 0) {
               filename = prompt("");
             }
@@ -227,7 +253,7 @@ int main() {
           }
           else if (choice == "3") {
             std::string filename = "";
-            std::cout << "Enter filename to write to." << std::endl;
+            std::cout << "Enter filename to write to" << std::endl;
             while (filename.size() == 0) {
               filename = prompt("");
             }
