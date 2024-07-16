@@ -53,11 +53,13 @@ Our program provides two interfaces. For those who want a quick summary without 
 
 ## Simple Interface
 
-The simple interface is an interactive console that allows users to use simple commands to calculate upper/lower bounds of guessing curves and/or generate entire plots of guessing curves without having to write code. Please see the [usage](usage) section for guidance on building and executing the interactive console. The interface has several functionalities:
+The simple interface is an interactive console that allows users to use simple commands to calculate upper/lower bounds of guessing curves and/or generate entire plots of guessing curves without having to write code. The interface has several functionalities:
 
 - Generate the best upper/lower bounds for specific guessing budgets.
 - Generate plots of the upper/lower bounds (best bounds or all available bounds) for the entire guessing curve ($\lambda_{G}$ vs. $G$).
 - Maintain multiple password samples during the same session for the user to analyze and compare different samples.
+
+Please see the [usage](usage) section for guidance on building and executing the interactive console.
 
 ## Advanced Tools
 
