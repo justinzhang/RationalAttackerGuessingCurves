@@ -53,7 +53,11 @@ Our program provides two interfaces. For those who want a quick summary without 
 
 ## Simple Interface
 
-The simple interface is an interactive console that allows users to use simple commands to calculate upper/lower bounds of guessing curves and/or generate entire plots of guessing curves.
+The simple interface is an interactive console that allows users to use simple commands to calculate upper/lower bounds of guessing curves and/or generate entire plots of guessing curves without having to write code. Please see the [usage](usage) section for guidance on building and executing the interactive console. The interface has several functionalities:
+
+- Generate the best upper/lower bounds for specific guessing budgets.
+- Generate plots of the upper/lower bounds (best bounds or all available bounds) for the entire guessing curve ($\lambda_{G}$ vs. $G$).
+- Maintain multiple password samples during the same session for the user to analyze and compare different samples.
 
 ## Advanced Tools
 
@@ -62,14 +66,14 @@ The program utilizes the data structure `dist_t` to represent password samples a
 ### Creating a `dist_t` object
 
 - Use the `read_file(dist, filename, filetype)` function to associate a password sample stored in `filename` with the object `dist`. `filetype` should be either `"plain"`, `"pwdfreq"`, or `"freqcount"` depending on the format of the password sample file. The function returns `true` if the sample was successfully read and `false` if the file does not exist or couldn't be read.
-- Use the `set_verbose(dist, true/false)` function to turn on/off error messages. Error messages are output to `stderr`, one can also redirect them to another file.
+- Use the `set_verbose(dist, true/false)` function to turn on/off error messages. Error messages are output to `stderr`, one can also redirect them to another file. By default, it is set to true.
 - Use the `write_freqcount(dist, filename)` function to write the password sample `dist` in the "freqcount" format to the file `filename`. This is useful since reading a "freqcount" file is much more efficient than reading a file with actual passwords. The function returns `true` is the data was successfully written to the file and `false` otherwise.
 
 ### Partitioning a sample
 
 The program provides two ways of partitioning a sample into two sets, which is necessary for calculating tight lower bounds. The first way is partitioning inside the program, and the second way is partitioning before the running program. For samples in the format "freqcount", only the first method is viable; for samples in formates "plain" or "pwdfreq", both methods are viable but the second method is recommended.
 
-It is recommended that the user keep the size of $D_{2}$ relatively small compared to the total number of samples (the [paper](lp_paper) uses $d = 25000$ with sample sets of size around $10^{8}$) to get the best bounds. Partitioning is required for bounds `samp_LB`, `extended_LB`, and `binom_LB`.
+It is recommended that the user keep the size of $D_{2}$ relatively small compared to the total number of samples (the paper uses $d = 25000$ with sample sets of size around $10^{8}$) to get the best bounds. Partitioning is required for bounds `samp_LB`, `extended_LB`, and `binom_LB`.
 
 #### Partitioning within the program
  
@@ -90,19 +94,21 @@ After partitioning the sample, one can train a passowrd guessing model using the
 
 All upper/lower bounds available have a basic version `bound_name(dist, G, err)` where `dist` is the `dist_t` object, `G` is the guessing budget, and `err` is the desired error rate, which automatically selects parameters if necessary. The bounds with extra parameters have overloads where the user can manually set them. The output lower bounds $L$ (resp. upper bounds $U$) hold with probability at least `err`.
 
-- `freq_UB(dist, G, err)`: no adjustable parameters.
-- `samp_LB`: requires partition. Size of partition `d` is an adjustable parameter.
-- `extended_LB`: requires partition and a model attack. Size of partition `d` and the password model used are adjustable parameters.
-- `LP_LB`: The mesh granularity `q`, number of linear constraints in the LP `iprime`, error rates `errs`, and slack terms `xhats` are adjustable parameters. Use `LP_LB(dist, G, q, iprime, errs, xhats)` to set parameters. `q` should be a `double` greater than 1, `iprime` should be an integer, `errs` should be a `vector<double>` of size `iprime + 1` that specifies the error rate of each linear constraint in the LP, and `xhats` should be a `vector<double>` of size `iprime + 1`. The final error rate of the lower bound would be two times the sum of the elements of `errs`. For details about the parameters, please see [the paper](./papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf)
-- `LP_UB`: The mesh granularity `q`, number of linear constraints in the LP `iprime`, error rates `errs`, and slack terms `xhats` are adjustable parameters. Use `LP_UB(dist, G, q, iprime, errs, xhats)` to set parameters. `q` should be a `double` greater than 1, `iprime` should be an integer, `errs` should be a `vector<double>` of size `iprime + 1` that specifies the error rate of each linear constraint in the LP, and `xhats` should be a `vector<double>` of size `iprime + 1`. The final error rate of the upper bound would be two times the sum of the elements of `errs`. For details about the parameters, please see [the paper](./papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf)
-- `binom_LB`: requires partition. Size of partition `d` is an adjustable parameter.
-- `binom_UB(dist, G, err)`: no adjustable parameters.
+- `freq_UB(dist, G, err)`: No adjustable parameters.
+- `samp_LB`: Requires partition and the size of partition `d` is an adjustable parameter.
+- `extended_LB`: Requires partition and a model attack. The size of the partition `d` and the password model used are adjustable parameters.
+- `LP_LB`: The mesh granularity `q`, number of linear constraints in the LP `iprime`, error rates `errs`, and slack terms `xhats` are adjustable parameters. Use `LP_LB(dist, G, q, iprime, errs, xhats)` to set parameters. `q` should be a `double` greater than 1, `iprime` should be an integer, `errs` should be a `vector<double>` of size `iprime + 1` that specifies the error rate of each linear constraint in the LP, and `xhats` should be a `vector<double>` of size `iprime + 1`. The final error rate of the lower bound would be two times the sum of the elements of `errs`. For details about the parameters, please see [the paper](./papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf).
+- `LP_UB`: The mesh granularity `q`, number of linear constraints in the LP `iprime`, error rates `errs`, and slack terms `xhats` are adjustable parameters. Use `LP_UB(dist, G, q, iprime, errs, xhats)` to set parameters. `q` should be a `double` greater than 1, `iprime` should be an integer, `errs` should be a `vector<double>` of size `iprime + 1` that specifies the error rate of each linear constraint in the LP, and `xhats` should be a `vector<double>` of size `iprime + 1`. The final error rate of the upper bound would be two times the sum of the elements of `errs`. For details about the parameters, please see [the paper](./papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf).
+- `binom_LB`: Requires partition and the size of the partition `d` is an adjustable parameter.
+- `binom_UB(dist, G, err)`: No adjustable parameters.
+
+If successful, the functions return a number between 0 and 1, the upper or lower bound. If an error occured, the functions return `-1`, and an error message will be printed to the console if `verbose` is set to true. For the linear programming bounds, the functions will return `-2` if the linear program is infeasible which indicates that the password sample was not sampled *iid* from the underlying distribution. As shown in [examples](examples/), the linear programs ran on the [linkedin frequency corpus](https://figshare.com/articles/dataset/linkedin_files_zip/7350287) sample set are infeasible as the dataset contains duplicate accounts of the same user.
 
 In addition, use the functions `best_LB(dist, G, err)` and `best_UB(dist, G, err)` to get the tightest bound for a specific $G$ value. The functions uses heuristics to avoid performing time consuming linear programs for certain $G$ values where other bounds are certainly better.
 
 ### Plotting the Guessing Curves
 
-Use the function `tikz_plot(data, style, legend, file)` to generate latex code for plotting the entire guessing curve ($\lambda_{G}$ vs. $G$). `data` is of type `vector<vector<pair<int64_t, string>>>`, `style` and `legend` is of type `vector<string>`, the three vectors should be of the same length. Each `vector<pair<int64_t, double>>` is a list of $(\lambda_{G}, G)$ pairs for a certain bound, and the corresponding elements in `style` and `legend` specifies the style and name of the bound. See [examples](examples/) for better guidance.
+Use the function `tikz_plot(data, style, legend, file)` to generate latex code for plotting the entire guessing curve ($\lambda_{G}$ vs. $G$). `data` is of type `vector<vector<pair<int64_t, string>>>`, `style` and `legend` is of type `vector<string>`, the three vectors should be of the same length. Each `vector<pair<int64_t, double>>` is a list of $(\lambda_{G}\,,\, G)$ pairs for a certain bound, and the corresponding elements in `style` and `legend` specifies the style and name of the bound. See [examples](examples/) for better guidance.
 
 > Make sure to include `\usepackage{tikz}` and `\usepackage{pfgplot}` in the latex file.
 

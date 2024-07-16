@@ -6,16 +6,16 @@
 #include <stdint.h>
 #include <cmath>
 
-void tikz_plot(std::vector<std::vector<std::pair<int64_t, double>>>& data, std::vector<std::string>& style, std::vector<std::string>& legend, std::string filename) {
+bool tikz_plot(std::vector<std::vector<std::pair<int64_t, double>>>& data, std::vector<std::string>& style, std::vector<std::string>& legend, std::string filename) {
   if (data.size() != style.size() || data.size() != legend.size()) {
     std::cerr << "Error: 'data' and 'style' must be the same size. Nothing done." << std::endl;
-    return;
+    return false;
   }
 
   std::ofstream fout(filename);
   if (!fout.is_open()) {
     std::cerr << "Error: Can't open file " << filename << ". Nothing done." << std::endl;
-    return;
+    return false;
   }
 
   int64_t xmin=INT64_MAX, xmax=INT64_MIN;
@@ -72,5 +72,8 @@ void tikz_plot(std::vector<std::vector<std::pair<int64_t, double>>>& data, std::
   fout << "  \\end{axis}\n"
           "\\end{tikzpicture}\n";
 
+  fout.close();
+
+  return true;
 }
 
