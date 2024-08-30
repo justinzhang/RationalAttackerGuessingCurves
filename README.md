@@ -1,6 +1,6 @@
 # Tighter Analysis of Password Guessing Curves with Applications to PINs
 
-This is an implementation of the statistical techniques from an anonymous USENIX 2025 submission (Tighter Analysis of Password Guessing Curves with Applications to PINs). The repository also implements statistical bounds described in [prior work (Blocki & Liu S&P 2023)](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf). 
+This is an implementation of the statistical techniques from an anonymous [USENIX 2025 submission](papers/PIN_Bounds.pdf) (Tighter Analysis of Password Guessing Curves with Applications to PINs). The repository also implements statistical bounds described in [prior work (Blocki & Liu S&P 2023)](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf). 
 
 ## Introduction
 
@@ -18,7 +18,7 @@ The program can process password samples in 3 different file formats:
 - **password-frequency**: Each line is a password and an integer separated by a `\t` character, representing a **unique** password and the number of times it occurs in the sample (i.e. its frequency). To ensure correctness, make sure that no two lines contain the same passwords.
 - **frequency-count**: Each line is two integers $x$ and $y$ separated by whitespace, indicating that there are $y$ unique passwords that all occur $x$ times in the sample.
 
-> Note: A `"freqcount"` sample does not contain information about the actual passwords. Therefore, bounds that incorporate password cracking models cannot be applied to such datasets. Specifically, the `extended_LB` bound described in [the paper](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) is not available for such samples.
+> Note: A `"freqcount"` sample does not contain information about the actual passwords. Therefore, bounds that incorporate password cracking models cannot be applied to such datasets. Specifically, the `extended_LB` bound described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) is not available for such samples.
 
 For example, consider a password sample containing 4 passwords: `{ "123456", "abcdef", "Password123", "abcdef" }`. In **plain text** format, it would be
 
@@ -42,7 +42,7 @@ When interacting with the interface, the user can use strings `"plain"`, `"pwdfr
 
 ### Bounding Techniques
 
-We implement four statistical techniques to generate upper/lower bounds $\lambda_G$ for guessing budgets $G$ of varying magnitudes. The first 3 categories are described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) and the last one is from the current USENIX 2025 submission. <!--[this paper](papers/PIN_paper).-->
+We implement four statistical techniques to generate upper/lower bounds $\lambda_G$ for guessing budgets $G$ of varying magnitudes. The first 3 categories are described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) and the last one is from the current [USENIX 2025 submission](papers/PIN_Bounds.pdf). <!--[this paper](papers/PIN_paper).-->
 
 1. Empirical Distribution (Upper Bound): Use the empirical distribution to upper bound $\lambda_G$. `freq_UB` is the bound that applies this technique.
 2. Sample Partition (Lower Bound): Partition the sample $S$ into two parts $D_1$ and $D_2$. Use $D_1$ to build a cracking dictionary (ordered by frequency with which these passwords occur in $D_1$) and then measure the fraction of passwords in $D_2$ that would be cracked within $G$ guesses by an attacker that uses this dictionary. This lower bounds $\lambda_G$ as an attacker will perfect knowledge of the distribution can only **outperform** an attacker with partial knowledge of the distribution (the samples in $D_1$). Intuitively, this bound plateaus as the guessing budget $G$ exceeds the number of distinct passowrds in $D_{1}$, we can obtain an extended lowerbound by using a password generating model to make the remaining guesses. Bounds that apply this technique are `samp_LB`, `extended_LB`, and `binom_LB`.
