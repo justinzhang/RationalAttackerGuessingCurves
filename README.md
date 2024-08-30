@@ -1,6 +1,6 @@
 # Tighter Analysis of Password Guessing Curves with Applications to PINs
 
-This is an implementation of the statistical techniques from an anonymous [USENIX 2025 submission](papers/PIN_Bounds.pdf) (Tighter Analysis of Password Guessing Curves with Applications to PINs). The repository also implements statistical bounds described in [prior work (Blocki & Liu S&P 2023)](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf). 
+This is an implementation of the statistical techniques from an anonymous [USENIX 2025 submission](papers/PIN_Bounds.pdf) (Tighter Analysis of Password Guessing Curves with Applications to PINs). The repository also implements statistical bounds described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) of Blocki and Liu (S&P 2023). 
 
 ## Introduction
 
