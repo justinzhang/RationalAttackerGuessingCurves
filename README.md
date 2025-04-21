@@ -1,6 +1,6 @@
 # Tighter Analysis of Password Guessing Curves with Applications to PINs
 
-This is an implementation of the statistical techniques from an anonymous [USENIX 2025 submission](papers/PIN_Bounds.pdf) (Tighter Analysis of Password Guessing Curves with Applications to PINs). The repository also implements statistical bounds described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) of Blocki and Liu (S&P 2023). 
+This is an implementation of the statistical techniques from an anonymous [submission](papers/PIN_Bounds.pdf) (Tighter Analysis of Password Guessing Curves with Applications to PINs). The repository also implements statistical bounds described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) of Blocki and Liu (S&P 2023). 
 
 ## Introduction
 
@@ -42,7 +42,7 @@ When interacting with the interface, the user can use strings `"plain"`, `"pwdfr
 
 ### Bounding Techniques
 
-We implement four statistical techniques to generate upper/lower bounds $\lambda_G$ for guessing budgets $G$ of varying magnitudes. The first 3 categories are described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) and the last one is from the current [USENIX 2025 submission](papers/PIN_Bounds.pdf). <!--[this paper](papers/PIN_paper).-->
+We implement four statistical techniques to generate upper/lower bounds $\lambda_G$ for guessing budgets $G$ of varying magnitudes. The first 3 categories are described in [prior work](papers/Towards_a_Rigorous_Statistical_Analysis_of_Empirical_Password_Datasets.pdf) and the last one is from the current [submission](papers/PIN_Bounds.pdf). <!--[this paper](papers/PIN_paper).-->
 
 1. Empirical Distribution (Upper Bound): Use the empirical distribution to upper bound $\lambda_G$. `freq_UB` is the bound that applies this technique.
 2. Sample Partition (Lower Bound): Partition the sample $S$ into two parts $D_1$ and $D_2$. Use $D_1$ to build a cracking dictionary (ordered by frequency with which these passwords occur in $D_1$) and then measure the fraction of passwords in $D_2$ that would be cracked within $G$ guesses by an attacker that uses this dictionary. This lower bounds $\lambda_G$ as an attacker will perfect knowledge of the distribution can only **outperform** an attacker with partial knowledge of the distribution (the samples in $D_1$). Intuitively, this bound plateaus as the guessing budget $G$ exceeds the number of distinct passowrds in $D_{1}$, we can obtain an extended lowerbound by using a password generating model to make the remaining guesses. Bounds that apply this technique are `samp_LB`, `extended_LB`, and `binom_LB`.
