@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "distribution.hpp"
 
@@ -16,3 +17,6 @@ double LP_LB_slow(dist_t&, int64_t, double);
 double LP_UB_slow(dist_t&, int64_t, double);
 double LP_LB(dist_t&, int64_t, double); 
 double LP_UB(dist_t&, int64_t, double); 
+
+std::pair<int, double>  threshold_LP(double v, double k, int B, int B_star, 
+    std::map<int,std::pair<double,double>> lamBounds, int name);

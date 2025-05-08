@@ -10,6 +10,132 @@
 #include "helpers.hpp"
 #include "error_check.hpp"
 
+std::pair<int, double>  threshold_LP(double v, double k, int B, int B_star, 
+  std::map<int,std::pair<double,double>> lamBounds, int name) {
+  try {
+    GRBEnv env = GRBEnv(true);
+    env.set(GRB_IntParam_OutputFlag, 0);
+    env.start();
+    GRBModel model = GRBModel(env);
+
+    // variables -- vars[i] = x_{i + 1}
+    std::vector<GRBVar> vars(B_star); 
+    std::cout << "there are " << std::to_string(B_star) << std::endl;
+    for (int i = 0; i < B_star; i++) {
+      vars[i] = model.addVar(0.0, 1.0, 0.0, GRB_CONTINUOUS, "vars[" + std::to_string(i)+ "]");
+    }
+
+    // objective -- max/min lambda_B' = \sum_{i = 1}^B x_i = \sum_{i = 0}^{B - 1} vars[i]
+    GRBLinExpr obj = 0.0;
+    for (int i = 0; i < B; i++) { 
+      obj += vars[i];
+    }
+    
+    model.setObjective(obj, name);
+    
+    // constraints
+    // c1: sum to 1
+    GRBLinExpr sum_vars = 0.0;
+    for (int j = 0; j < B_star; j++) {
+      sum_vars += vars[j];
+    }
+    model.addConstr(1.0, GRB_GREATER_EQUAL, sum_vars, "sum leq 1"); //NOTE: leq 1 by assumption
+
+    // ordered greatest to least
+    for (int j = 0; j < B_star - 1; j++) {
+      model.addConstr(vars[j], GRB_GREATER_EQUAL,vars[j+1], "greatest to least" + std::to_string(j));
+    }
+
+
+    //util constr 
+    std::vector<GRBLinExpr> util(B_star); 
+
+    for (int i = 0; i < B_star; i++) {
+
+      GRBLinExpr curr = 0.0;
+
+      GRBLinExpr lambdaI = 0.0;
+
+      for (int j = 0; j < i; j++) {
+        lambdaI += vars[j];
+      }
+
+      
+
+      GRBLinExpr iLambdaI = 0.0;
+      for (int j = 0; j < i; j++) {
+        iLambdaI += (j + 1) * vars[j];
+      }
+
+      curr += (lambdaI) * v - (k * iLambdaI + ( 1 - lambdaI) * i * k);
+      util[i] = curr;
+    }
+
+    for (int j = 0; j < B_star; j++){
+      model.addConstr(util[B], GRB_GREATER_EQUAL, util[j], "util " + std::to_string(j));
+    }
+
+    int lastB;
+    //Lambda constraints 
+    for (auto entry : lamBounds) {
+        int currB = entry.first;
+        double minLam = entry.second.first;
+        double maxLam = entry.second.second; 
+
+        if (currB >= vars.size()) {
+          lastB = currB;
+          break;
+        }
+        // std::cout << "adding B = " << std::to_string(currB) << " with " << std::to_string(minLam) << "," << std::to_string(maxLam) << std::endl;
+        GRBLinExpr lambdaB = 0.0;
+        for (int i = 0; i < currB; i++) {
+          lambdaB += vars[i];
+        }
+        model.addConstr(lambdaB, GRB_GREATER_EQUAL, minLam,  std::to_string(currB) + ", minLam " + std::to_string(minLam));
+        model.addConstr(lambdaB, GRB_LESS_EQUAL, maxLam, std::to_string(currB) + ", maxLam " + std::to_string(maxLam) );
+        
+    }
+
+
+    std::cout << "constraints added successfully up to the bounds prior to B = " << std::to_string(lastB) << std::endl;
+    model.optimize();
+
+    // status/solution
+    int status = model.get(GRB_IntAttr_Status);
+    GRBVar *varReturn = model.getVars();
+    // double *values = model.get(GRB_DoubleAttr_X, varReturn, B_star);
+
+		if (status == GRB_OPTIMAL) {
+      return std::make_pair(0, model.get(GRB_DoubleAttr_ObjVal));
+		}
+    else if (status == GRB_INFEASIBLE) {
+      std::cout << "infeasible" << std::endl;
+      return std::make_pair(-2,-0.0);
+    }
+    else {
+      std::cout << "idk" << std::endl;
+      return std::make_pair(-1,-0.0);
+    }
+
+  } catch(GRBException e) {
+    std::cout << "exception" << std::endl;
+    // if (dist.verbose) {
+    //   std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
+    // }
+    std::cerr << "\n[Error: code = " << e.getErrorCode() << "; message: " << e.getMessage() << ".]" << std::endl;
+    return std::make_pair(-3,-0.0);
+  } catch(...) {
+    std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
+    // if (dist.verbose) {
+      // std::cerr << "\n[Error: Exception during optimization.]" << std::endl;
+    // }
+    return std::make_pair(-4,-0.0);
+  }
+
+  std::cout << "should not reach" << std::endl;
+  return std::make_pair(-5,-0.0);
+}
+
 double LP_lower(dist_t& dist, int64_t G, std::vector<double>& mesh, double q, int64_t iprime, int64_t idx, std::vector<double>& eps2s, std::vector<double>& eps3s, std::vector<double>& xhats) {
 
   int64_t l = mesh.size();

@@ -10,20 +10,20 @@ file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
 # gurobi c++ package
 if(APPLE)
-    set(GUROBI_PATH_DEFAULT "/Library/gurobi1102/macos_universal2")
+    set(GUROBI_PATH_DEFAULT "/Library/gurobi1201/macos_universal2")
 elseif(WIN32)
-    set(GUROBI_PATH_DEFAULT "C:/gurobi1102/win64")
+    set(GUROBI_PATH_DEFAULT "C:/gurobi1201/win64")
 else()
-    set(GUROBI_PATH_DEFAULT "/opt/gurobi1102/linux64")
+    set(GUROBI_PATH_DEFAULT "/opt/gurobi1201/linux64")
 endif()
 set(GUROBI_PATH ${GUROBI_PATH_DEFAULT} CACHE PATH "path to gurobi installation")
 set(GUROBI_CPPLIB -L${GUROBI_PATH}/lib -lgurobi_c++ -lgurobi110 -lm)
 
 # test executable
-add_executable(test test.cpp ${SRC_FILES})
-target_include_directories(test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(test PUBLIC ${GUROBI_PATH}/include)
-target_link_libraries(test ${GUROBI_CPPLIB})
+# add_executable(test test.cpp ${SRC_FILES})
+# target_include_directories(test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# target_include_directories(test PUBLIC ${GUROBI_PATH}/include)
+# target_link_libraries(test ${GUROBI_CPPLIB})
 
 # example executable
 add_executable(example examples/example.cpp ${SRC_FILES})
@@ -36,6 +36,29 @@ add_executable(interactive interactive.cpp ${SRC_FILES})
 target_include_directories(interactive PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(interactive PUBLIC ${GUROBI_PATH}/include)
 target_link_libraries(interactive ${GUROBI_CPPLIB})
+
+
+# statistics 
+add_executable(statistics dataset_stats/stats.cpp ${SRC_FILES})
+target_include_directories(statistics PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(statistics PUBLIC ${GUROBI_PATH}/include)
+target_link_libraries(statistics ${GUROBI_CPPLIB})
+
+# threshold -- my stuff 
+add_executable(threshold thresholds/threshold.cpp ${SRC_FILES})
+target_include_directories(threshold PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(threshold PUBLIC ${GUROBI_PATH}/include)
+target_link_libraries(threshold ${GUROBI_CPPLIB})
+
+add_executable(threshold800 thresholds/threshold800.cpp ${SRC_FILES})
+target_include_directories(threshold800 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(threshold800 PUBLIC ${GUROBI_PATH}/include)
+target_link_libraries(threshold800 ${GUROBI_CPPLIB})
+
+add_executable(threshold500 thresholds/threshold500.cpp ${SRC_FILES})
+target_include_directories(threshold500 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(threshold500 PUBLIC ${GUROBI_PATH}/include)
+target_link_libraries(threshold500 ${GUROBI_CPPLIB})
 
 # example of adding your own executable
 # add_executable(<executable_name> <source_file_name>.cpp ${SRC_FILES})
