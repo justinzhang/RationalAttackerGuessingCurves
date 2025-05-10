@@ -38,7 +38,7 @@ int main() {
 
     // std::vector<std::pair<int, double>> minData;
     // std::vector<std::pair<int, double>> maxData;
-    for  (int64_t G = 1; G < 50; G += 1) {
+    for  (int64_t G = 2000; G < 4000; G += 1) {
 
       std::cout << "Guessing Number " << G << std::endl;
       // double currMin = std::max(LP_LB(yahoo_dist, G, 0.01),binom_LB(yahoo_dist, G, 0.01));
